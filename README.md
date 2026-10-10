@@ -1,16 +1,9 @@
-# Android client
+# Unwalked: Android client
 
-Kotlin + Jetpack Compose. Background location collection, H3 aggregation, MapLibre map, recommendations.
+Android app for the bachelor thesis "Mobile Application for Recommending New Places and Walking Routes Based on the Analysis of the User's Habitual Geography". Documentation and business analysis: [unwalked-thesis](https://github.com/tuiiis/unwalked-thesis).
 
-## Layout
-
-| Path | Purpose |
-|---|---|
-| `app/` | Android Studio module (created by the IDE) |
-| `docs/adr/` | Architecture decision records, feed the thesis criteria files |
-| `docs/` | Client architecture diagram, navigation map, tech stack rationale (Front-end criterion package) |
-| `tools/gpx/` | GPX tracks and the replay simulator for repeatable runs |
+Planned stack: Kotlin, Jetpack Compose, MapLibre, H3, Room.
 
 ## Status
 
-Empty. Create the Android Studio project into this folder (package name `lt.ehu.<name>`, min SDK 26).
+Not started. Development begins with a background location spike in October 2026.
