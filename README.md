@@ -6,4 +6,4 @@ Planned stack: Kotlin, Jetpack Compose, MapLibre, H3, Room.
 
 ## Status
 
-Not started. Development begins with a background location spike in October 2026.
+Not started. Background collection, stay detection, H3 cells and the offline map were checked in throwaway prototypes in October 2026, outside this repository. Development of the app begins after the BA defence.
