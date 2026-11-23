@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Unwalked</string>
+    <string name="channel_recording">Walk recording</string>
+    <string name="recording_title">Unwalked is recording your walks</string>
+    <string name="recording_text">Your locations stay on this phone</string>
+</resources>

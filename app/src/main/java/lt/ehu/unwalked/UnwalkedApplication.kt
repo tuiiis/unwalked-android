@@ -1,0 +1,25 @@
+package lt.ehu.unwalked
+
+import android.app.Application
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
+import org.maplibre.android.MapLibre
+
+class UnwalkedApplication : Application() {
+    lateinit var container: AppContainer
+        private set
+
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+
+    override fun onCreate() {
+        super.onCreate()
+        container = AppContainer(this)
+        MapLibre.getInstance(this)
+        scope.launch {
+            container.history.applyRetention(container.preferences.retention.value.days)
+            container.feedback.flush()
+        }
+    }
+}
