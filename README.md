@@ -4,6 +4,10 @@ Android app for the bachelor thesis "Mobile Application for Recommending New Pla
 
 The app records where you walk, shows it as a heat map of H3 cells, and suggests places and walking routes in the parts of the city you have not walked yet. Location history stays on the phone.
 
+## Try it
+
+A debug build is attached to the [latest release](https://github.com/tuiiis/unwalked-android/releases/latest). It talks to the public API at https://unwalked-api.onrender.com, which sleeps after 15 minutes without traffic, so the first request after a pause can take about a minute.
+
 ## Build and run
 
 Requirements: JDK 17 or newer, Android SDK 36, and the backend running locally for the server features.
