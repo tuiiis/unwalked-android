@@ -20,9 +20,12 @@ flowchart LR
     map -- "search bar" --> discover[Places for you]
     map -- "Find something new" --> discover
     map -- "profile icon" --> privacy[Data and privacy]
-    discover -- "Go" --> map
+    discover -- "tap a place" --> place[Place preview]
+    place -- "Back" --> discover
+    place -- "Build a route here" --> preview
     walk -- "Build route" --> preview[Route preview]
     preview -- "Change" --> walk
+    stats -- "Open the map" --> map
     preview -- "Start walk" --> map
     privacy -- "Sign out" --> signin
 ```
@@ -36,11 +39,13 @@ flowchart LR
 
 ## S2. Place recommendation
 
-1. On the map the user taps "Find something new" or the search bar
-2. Places for you loads places from the API in cells next to the habitual ones, removes places in cells already visited, and ranks the rest by novelty
-3. The user narrows the list with the search field, a category chip or the sort order
-4. "Not now" hides the place for 90 days with a five second Undo. "Go" shows the place on the map
-5. If the user agreed to help the study, each tap sends anonymous feedback. Feedback that cannot be sent waits in an outbox and is retried with the same id
+1. The user picks a period on the map (month, quarter, year or all time) and taps "Find something new" or the search bar
+2. Places for you finds the streets the user walked in that period and loads places from the API within 250 m of them, skipping cells the user has already been to
+3. Each place gets a plain label instead of a score: "Overlooked" for a place the user has walked past many times, "On your way" for one right on a usual street, "Around the corner" for a short turn off it, and "Just beyond" for one a little past where the user usually turns. Best match puts the strongest labels first, Closest puts the places nearest to the usual streets first
+4. The user narrows the list with the search field, a category chip or the sort order
+5. "Not now" hides the place for 90 days with a five second Undo
+6. Tapping a place opens its preview: the name in the search field at the top, the place on the map with the user's walks, its photo and the reason it was suggested. Back returns to the list. "Build a route here" plans a walking route from the current position to the place
+7. If the user agreed to help the study, each tap sends anonymous feedback. Feedback that cannot be sent waits in an outbox and is retried with the same id
 
 ## S3. Walk of a set length
 
@@ -48,6 +53,12 @@ flowchart LR
 2. The user chooses a loop or a different end point and whether to prefer new streets or places
 3. Route preview tries eight directions, picks the one that crosses the most unvisited cells, and asks the routing service for a walking route through it
 4. The preview shows length, time, new streets, new places and the share of the route that is still unwalked. "Start walk" puts the route on the map
+
+## S4. Stats
+
+1. The Stats tab uses the same periods as the map
+2. It shows the cities and countries the walks were in, with flags and a globe, the distance walked with the next milestone, the walking pace with a playful label such as "Brisk walker", the time of day and the days of the week the user walks most, the favourite spots and the kinds of places nearby, and records such as the longest walk
+3. A period without walks shows a short message and a button back to the map
 
 ## Sign in and registration
 

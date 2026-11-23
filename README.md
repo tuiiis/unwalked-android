@@ -38,7 +38,10 @@ All tests run on the JVM, including the Compose UI tests (Robolectric). No emula
 
 | Kind | Tests |
 |---|---|
-| Unit, domain | `CredentialsValidatorTest`, `WalkLengthTest`, `RecommendationEngineTest`, `CandidateCellsTest`, `StatsCalculatorTest`, `RoutePlannerTest`, `RecordingStatusRulesTest`, plus the tracking tests `CellAggregatorTest`, `StayDetectorTest`, `GpxParserTest`, `TrackStatsTest` |
+| Unit, domain | `CredentialsValidatorTest`, `WalkLengthTest`, `RecommendationEngineTest`, `CandidateCellsTest`, `UsualCellsTest`, `RouteToPlaceTest`, `RoutePlannerTest`, `SpursTest`, `RecordingStatusRulesTest` |
+| Unit, stats | `StatsCalculatorTest`, `FunFactsTest`, `TravelStatsTest`, `FavouritePlacesTest` |
+| Unit, tracking | `CellAggregatorTest`, `StayDetectorTest`, `GpxParserTest`, `TrackStatsTest`, `WalkingFilterTest`, `StreaksTest`, `GoogleTimelineTest` |
+| Unit, map | `StreetGraphTest`, `StreetGlowTest`, `TrailMorphTest`, `WalkedStreetsTest`, `NameMatchTest` |
 | Unit, ViewModels | `AuthViewModelTest`, `WalkViewModelTest`, `DiscoverViewModelTest` |
 | Integration, API client | `ApiErrorHandlingTest` runs the real Retrofit client against MockWebServer, `FeedbackRepositoryTest` covers the offline outbox |
 | UI | `AuthScreenTest`, `WalkScreenTest` drive the real screens and ViewModels with Compose UI test |
@@ -54,12 +57,13 @@ All tests run on the JVM, including the Compose UI tests (Robolectric). No emula
 | Tech stack justification | [docs/tech-stack.md](docs/tech-stack.md) |
 | API the client uses | [Backend API docs](https://github.com/tuiiis/unwalked-backend/tree/main/docs/api), client side in `core/network` |
 | Screens, reusable components, services | `feature/*` screens and ViewModels, `core/ui/components`, `data/*` repositories |
-| Routing, 7 routes | `navigation/Routes.kt`, `navigation/UnwalkedApp.kt` |
+| Routing, 9 routes | `navigation/Routes.kt`, `navigation/UnwalkedApp.kt` |
 | Forms with validation | Sign in and registration (`feature/auth`), walk length (`feature/walk`), rules in `domain/validation` |
 | Lists with search, filter and sort | Places for you (`feature/discover`) |
 | Global error handling | `core/network/SafeApiCall` maps every failure to `AppError`, `core/error/ErrorReporter` shows snackbars and signs out on 401, collected once in `navigation/UnwalkedApp.kt` |
 | Loading states | `SkeletonBlock` placeholders on every screen that loads, spinners on buttons |
 | Tests | `app/src/test`, see above |
+| Beyond the minimum | Animated transitions (`core/ui/motion`), charts and a globe on the Stats tab, a dark theme, content descriptions and headings for TalkBack |
 
 ## Project layout
 
