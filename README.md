@@ -47,6 +47,10 @@ All tests run on the JVM, including the Compose UI tests (Robolectric). No emula
 | UI | `AuthScreenTest`, `WalkScreenTest` drive the real screens and ViewModels with Compose UI test |
 | Screenshots | `ScreenshotTest` renders 15 screen states. Run with `-Pscreenshots` to write them to `app/build/screenshots` |
 
+## Continuous integration
+
+GitHub Actions runs [ci.yml](.github/workflows/ci.yml) on every push and pull request: Android Lint, all JVM tests, and a debug build. The lint and test reports and the APK are attached to each run.
+
 ## Where the Front-end criterion is implemented
 
 | Requirement | Where |
