@@ -70,6 +70,7 @@ import lt.ehu.unwalked.core.ui.theme.Palette
 import lt.ehu.unwalked.domain.recommendation.CategoryGroup
 import lt.ehu.unwalked.domain.recommendation.CategoryNames
 import lt.ehu.unwalked.domain.recommendation.Recommendation
+import lt.ehu.unwalked.domain.recommendation.RecommendationEngine
 import lt.ehu.unwalked.domain.recommendation.SortOrder
 
 data class DiscoverActions(
@@ -82,6 +83,7 @@ data class DiscoverActions(
     val onUndo: () -> Unit = {},
     val onUndoTimeout: () -> Unit = {},
     val onRetry: () -> Unit = {},
+    val onWiden: () -> Unit = {},
     val onOpenMap: () -> Unit = {},
     val photo: suspend (Recommendation) -> String? = { null },
     val photoCredit: Boolean = false,
@@ -163,11 +165,18 @@ private fun Content(state: DiscoverUiState, actions: DiscoverActions, modifier: 
             }
             if (content.items.isEmpty()) {
                 item {
-                    MessageState(
-                        Icons.Outlined.SearchOff,
-                        if (content.total == 0) "No new places around you" else "Nothing matches",
-                        if (content.total == 0) "Every place in the catalogue near your walks is already familiar. Try a longer walk." else "Try another word or category.",
-                    )
+                    when {
+                        content.total > 0 -> MessageState(Icons.Outlined.SearchOff, "Nothing matches", "Try another word or category.")
+
+                        content.radiusMetres < RecommendationEngine.WIDER_METRES -> MessageState(
+                            Icons.Outlined.SearchOff,
+                            "Nothing new within ${content.radiusMetres.toInt()} m",
+                            "You have been to every place we know near your usual routes.",
+                            action = "Look within 1 km" to actions.onWiden,
+                        )
+
+                        else -> MessageState(Icons.Outlined.SearchOff, "Nothing new within 1 km", "You have been to every place we know near your usual routes.")
+                    }
                 }
             }
             items(content.items, key = { it.place.id }) { item -> PlaceCard(item, actions, Modifier.animateItem()) }

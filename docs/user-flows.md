@@ -40,7 +40,7 @@ flowchart LR
 ## S2. Place recommendation
 
 1. The user picks a period on the map (month, quarter, year or all time) and taps "Find something new" or the search bar
-2. Places for you finds the streets the user walked in that period and loads places from the API within 250 m of them, skipping cells the user has already been to
+2. Places for you finds the streets the user walked in that period and loads places from the API within 500 m of them, skipping cells the user has already been to. When nothing is left, Look within 1 km repeats the search with a 1 km radius
 3. Each place gets a plain label instead of a score: "Overlooked" for a place the user has walked past many times, "On your way" for one right on a usual street, "Around the corner" for a short turn off it, and "Just beyond" for one a little past where the user usually turns. Best match puts the strongest labels first, Closest puts the places nearest to the usual streets first
 4. The user narrows the list with the search field, a category chip or the sort order
 5. "Not now" hides the place for 90 days with a five second Undo

@@ -17,6 +17,7 @@ class RecommendationEngine(private val walkingMetresPerMinute: Double = 80.0, pr
         visitedCells: Set<Long>,
         habitual: List<HabitualPoint>,
         hiddenIds: Set<Long>,
+        maxMetres: Double = maxMetresFromUsual,
     ): List<Recommendation> {
         if (habitual.isEmpty()) return emptyList()
         return candidates
@@ -36,7 +37,7 @@ class RecommendationEngine(private val walkingMetresPerMinute: Double = 80.0, pr
                     timesPassed = passed,
                 )
             }
-            .filter { it.metresFromHabitual <= maxMetresFromUsual }
+            .filter { it.metresFromHabitual <= maxMetres }
             .toList()
     }
 
@@ -65,7 +66,8 @@ class RecommendationEngine(private val walkingMetresPerMinute: Double = 80.0, pr
     }
 
     companion object {
-        const val MAX_METRES_FROM_USUAL = 250.0
+        const val MAX_METRES_FROM_USUAL = 500.0
+        const val WIDER_METRES = 1000.0
         const val ON_THE_WAY_METRES = 60.0
         const val AROUND_THE_CORNER_METRES = 150.0
         const val OVERLOOKED_PASSES = 10

@@ -2,6 +2,7 @@ package lt.ehu.unwalked.feature.discover
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import kotlin.math.ceil
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -27,7 +28,7 @@ sealed interface DiscoverContent {
     data object Loading : DiscoverContent
     data object NoHistory : DiscoverContent
     data class Failed(val message: String) : DiscoverContent
-    data class Ready(val items: List<Recommendation>, val total: Int) : DiscoverContent
+    data class Ready(val items: List<Recommendation>, val total: Int, val radiusMetres: Double = RecommendationEngine.MAX_METRES_FROM_USUAL) : DiscoverContent
 }
 
 data class DiscoverUiState(
@@ -68,7 +69,7 @@ class DiscoverViewModel(
             query = q,
             group = g,
             order = o,
-            content = if (content is DiscoverContent.Ready) DiscoverContent.Ready(engine.filter(visible, q, g, o), visible.size) else content,
+            content = if (content is DiscoverContent.Ready) DiscoverContent.Ready(engine.filter(visible, q, g, o), visible.size, content.radiusMetres) else content,
             justHidden = lastHidden,
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), DiscoverUiState())
@@ -77,7 +78,9 @@ class DiscoverViewModel(
         load()
     }
 
-    fun load() {
+    fun widen() = load(RecommendationEngine.WIDER_METRES)
+
+    fun load(radiusMetres: Double = RecommendationEngine.MAX_METRES_FROM_USUAL) {
         loaded.value = DiscoverContent.Loading
         viewModelScope.launch {
             val habits = habitual.habitual(since())
@@ -85,10 +88,10 @@ class DiscoverViewModel(
                 loaded.value = DiscoverContent.NoHistory
                 return@launch
             }
-            when (val result = places.inCells(candidates.around(habits.usual), LIMIT)) {
+            when (val result = places.inCells(candidates.around(habits.usual, rings(radiusMetres)), LIMIT)) {
                 is Outcome.Success -> {
-                    all.value = engine.rank(result.value, habits.visited, habits.centres, emptySet())
-                    loaded.value = DiscoverContent.Ready(emptyList(), 0)
+                    all.value = engine.rank(result.value, habits.visited, habits.centres, emptySet(), radiusMetres)
+                    loaded.value = DiscoverContent.Ready(emptyList(), 0, radiusMetres)
                 }
 
                 is Outcome.Failure -> {
@@ -138,8 +141,11 @@ class DiscoverViewModel(
         else -> ErrorReporter.userText(error)
     }
 
+    private fun rings(radiusMetres: Double): Int = ceil(radiusMetres / RING_METRES).toInt().coerceAtLeast(1)
+
     companion object {
         const val TYPE = "nearby_new_place"
+        private const val RING_METRES = 260.0
         private const val LIMIT = 200
         private const val HIDE_MILLIS = 90L * 24 * 60 * 60_000
     }

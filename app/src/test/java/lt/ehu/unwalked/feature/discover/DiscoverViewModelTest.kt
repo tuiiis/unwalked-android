@@ -62,7 +62,7 @@ class DiscoverViewModelTest {
     fun ranksUnvisitedPlacesClosestToUsualRoutesFirst() = runTest {
         val vm = viewModel()
         assertEquals(listOf("Cat Cafe", "Bernardine Garden"), vm.ready().items.map { it.place.name })
-        assertEquals(7, places.requestedCells.size)
+        assertEquals(19, places.requestedCells.size)
     }
 
     @Test
@@ -112,5 +112,18 @@ class DiscoverViewModelTest {
         places.result = Outcome.Success(emptyList())
         vm.load()
         assertEquals(0, vm.ready().total)
+    }
+
+    @Test
+    fun emptyResultCanLookFurther() = runTest {
+        places.result = Outcome.Success(listOf(place(4, "Hill Gallery", "art_gallery", 700.0)))
+        val vm = viewModel()
+        val near = vm.ready()
+        assertEquals(0, near.total)
+        assertEquals(500.0, near.radiusMetres, 0.0)
+        vm.widen()
+        val wider = vm.state.first { (it.content as? DiscoverContent.Ready)?.radiusMetres == 1000.0 }.content as DiscoverContent.Ready
+        assertEquals(listOf("Hill Gallery"), wider.items.map { it.place.name })
+        assertEquals(61, places.requestedCells.size)
     }
 }

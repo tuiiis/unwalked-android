@@ -242,6 +242,7 @@ private fun MainFlow(container: AppContainer) {
                         onUndo = vm::undoHide,
                         onUndoTimeout = vm::dismissUndo,
                         onRetry = vm::load,
+                        onWiden = vm::widen,
                         onOpenMap = { nav.popBackStack() },
                     ),
                     focusSearch = args.focusSearch,
