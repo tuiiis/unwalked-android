@@ -36,6 +36,7 @@ import lt.ehu.unwalked.domain.tracking.Streak
 import lt.ehu.unwalked.domain.validation.WalkLength
 import lt.ehu.unwalked.tracking.RecordingStatus
 import lt.ehu.unwalked.tracking.RecordingStatusRules
+import timber.log.Timber
 
 data class MapSummary(val headline: String, val detail: String)
 
@@ -119,6 +120,7 @@ class MapViewModel(
                     if (activeWalk.value != walk) return
                     val metres = routed.value.metres
                     activeWalk.value = walk.copy(path = routed.value.path, metres = metres, minutes = (metres / 1000 / WalkLength.WALKING_KMH * 60).roundToInt())
+                    Timber.i("Route rebuilt from %.5f, %.5f: %.0f m", from.lat, from.lon, metres)
                     errors.info("Route updated", "Walk freely") { walkFreely() }
                 }
 

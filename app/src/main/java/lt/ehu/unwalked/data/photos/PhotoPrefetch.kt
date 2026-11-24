@@ -13,6 +13,7 @@ import lt.ehu.unwalked.domain.recommendation.CategoryGroup
 import lt.ehu.unwalked.domain.recommendation.HabitualSource
 import lt.ehu.unwalked.domain.recommendation.RecommendationEngine
 import lt.ehu.unwalked.domain.recommendation.SortOrder
+import timber.log.Timber
 
 class PhotoPrefetch(
     private val context: Context,
@@ -40,6 +41,7 @@ class PhotoPrefetch(
                     loaded++
                 }
         }
+        Timber.i("Prefetched %d photos for %d places", loaded, top.size)
         return loaded
     }
 

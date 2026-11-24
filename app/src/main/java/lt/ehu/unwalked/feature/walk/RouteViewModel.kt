@@ -31,6 +31,7 @@ import lt.ehu.unwalked.domain.route.Spurs
 import lt.ehu.unwalked.domain.route.WalkRoute
 import lt.ehu.unwalked.domain.tracking.GeoMath
 import lt.ehu.unwalked.domain.validation.WalkLength
+import timber.log.Timber
 
 sealed interface RouteUiState {
     data object Building : RouteUiState
@@ -75,6 +76,7 @@ class RouteViewModel(
                         val path = Spurs.trim(routed.value.path)
                         describe(path, routed.value.metres - (Spurs.length(routed.value.path) - Spurs.length(path)), visited, nearby)
                     }
+                    Timber.i("Route for %.1f km: %.0f m, %d new streets, %d places", request.kilometres, route.metres, route.newCells, route.places.size)
                     if (target == null && !fits(route.metres)) RouteUiState.Closest(route) else RouteUiState.Ready(route)
                 }
 

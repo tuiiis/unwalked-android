@@ -11,6 +11,7 @@ import lt.ehu.unwalked.data.route.RouteRepository
 import lt.ehu.unwalked.domain.route.LatLon
 import lt.ehu.unwalked.domain.tracking.Fix
 import lt.ehu.unwalked.domain.tracking.GeoMath
+import timber.log.Timber
 
 class SampleWalks(
     private val routes: RouteRepository,
@@ -25,6 +26,7 @@ class SampleWalks(
             }
         }
         val explorations = (0 until EXPLORATIONS).mapNotNull { loop(home, random, FAR_MIN_METRES, FAR_MAX_METRES, bearing = random.nextDouble(0.0, 360.0)) }
+        Timber.i("Sample walks around %.4f, %.4f: core %b, era routes %s, explorations %d", home.lat, home.lon, core != null, eras.map { it.size }, explorations.size)
         if (core == null && eras.all { it.isEmpty() }) return emptyList()
 
         val today = Instant.ofEpochMilli(nowMillis).atZone(zone).toLocalDate()

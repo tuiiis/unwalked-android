@@ -8,6 +8,7 @@ import lt.ehu.unwalked.core.network.PlacesByCellsRequest
 import lt.ehu.unwalked.core.network.SafeApiCall
 import lt.ehu.unwalked.core.network.UnwalkedApi
 import lt.ehu.unwalked.domain.recommendation.PlaceCandidate
+import timber.log.Timber
 
 interface PlacesRepository {
     suspend fun inCells(cells: List<String>, limit: Int): Outcome<List<PlaceCandidate>>
@@ -23,14 +24,25 @@ class RemotePlacesRepository(
 ) : PlacesRepository {
     override suspend fun prepareAreas(cells: List<String>, wait: Boolean, onLoading: () -> Unit) {
         val areas = cells.map { h3.h3ToString(h3.cellToParent(h3.stringToH3(it), AREA_RESOLUTION)) }.distinct().take(MAX_AREAS)
-        var loading = areas.filter { (call { api.ensureArea(it) } as? Outcome.Success)?.value?.status == LOADING }
+        val states = areas.associateWith { area ->
+            when (val result = call { api.ensureArea(area) }) {
+                is Outcome.Success -> result.value.status
+                is Outcome.Failure -> "unavailable: ${result.error}"
+            }
+        }
+        Timber.i("Areas for %d cells: %s", cells.size, states)
+        var loading = states.filterValues { it == LOADING }.keys.toList()
         if (loading.isEmpty() || !wait) return
         onLoading()
-        repeat(MAX_POLLS) {
+        repeat(MAX_POLLS) { poll ->
             delay(pollMillis)
             loading = loading.filter { (call { api.area(it) } as? Outcome.Success)?.value?.status == LOADING }
-            if (loading.isEmpty()) return
+            if (loading.isEmpty()) {
+                Timber.i("Areas ready after %d polls", poll + 1)
+                return
+            }
         }
+        Timber.w("Areas still loading after %d polls: %s", MAX_POLLS, loading)
     }
 
     override suspend fun inCells(cells: List<String>, limit: Int): Outcome<List<PlaceCandidate>> {

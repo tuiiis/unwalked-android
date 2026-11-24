@@ -23,10 +23,11 @@ import lt.ehu.unwalked.data.local.FeedbackOutboxDao
 import lt.ehu.unwalked.data.settings.Preferences
 import lt.ehu.unwalked.data.settings.Retention
 import lt.ehu.unwalked.domain.route.LatLon
+import timber.log.Timber
 
-enum class LongTask(val title: String, val body: String, val cancelled: String) {
-    Timeline("Importing Google Timeline", "This can take a minute. Keep the app open.", "Import cancelled. Nothing was added."),
-    Sample("Generating sample walks", "Building walks on real streets around your last location. This takes about a minute. Keep the app open.", "Generation cancelled. Nothing was added."),
+enum class LongTask(val title: String, val body: String, val cancelled: String, val failed: String) {
+    Timeline("Importing Google Timeline", "This can take a minute. Keep the app open.", "Import cancelled. Nothing was added.", "Could not read this file. Choose the Timeline.json exported from Android settings."),
+    Sample("Generating sample walks", "Building walks on real streets around your last location. This takes about a minute. Keep the app open.", "Generation cancelled. Nothing was added.", "Could not build sample walks. Check the internet connection and try again."),
 }
 
 data class PrivacyUiState(
@@ -69,9 +70,9 @@ class PrivacyViewModel(
         viewModelScope.launch { history.applyRetention(value.days) }
     }
 
-    fun export(output: OutputStream) = work("Your data was saved.") { output.use { history.export(it) } }
+    fun export(output: OutputStream) = work("export", "Your data was saved.", "Could not save your data. Try another folder.") { output.use { history.export(it) } }
 
-    fun deleteAll() = work("All location history was deleted.") {
+    fun deleteAll() = work("delete history", "All location history was deleted.", "Could not delete the history. Try again.") {
         stopRecording()
         preferences.setRecording(false)
         history.deleteAll()
@@ -95,19 +96,24 @@ class PrivacyViewModel(
 
     fun signOut() = auth.signOut()
 
-    private fun work(done: String, block: suspend () -> Unit) = work({ _: Unit -> done }, block)
+    private fun work(operation: String, done: String, failed: String, block: suspend () -> Unit) = work(operation, { _: Unit -> done }, failed, block)
 
     private fun run(kind: LongTask, done: (Int) -> String, block: suspend () -> Int) {
         if (busy.value || task.value != null) return
         task.value = kind
         taskJob = viewModelScope.launch {
+            val started = now()
             try {
-                errors.info(done(block()))
+                val added = block()
+                Timber.i("%s finished in %d ms, %d points added", kind, now() - started, added)
+                errors.info(done(added))
             } catch (cancelled: CancellationException) {
+                Timber.i("%s cancelled after %d ms", kind, now() - started)
                 errors.info(kind.cancelled)
                 throw cancelled
             } catch (failure: Exception) {
-                errors.info("That did not work: ${failure.message ?: failure.javaClass.simpleName}")
+                Timber.e(failure, "%s failed after %d ms", kind, now() - started)
+                errors.info(kind.failed)
             } finally {
                 task.value = null
                 taskJob = null
@@ -115,16 +121,19 @@ class PrivacyViewModel(
         }
     }
 
-    private fun <T> work(done: (T) -> String, block: suspend () -> T) {
+    private fun <T> work(operation: String, done: (T) -> String, failed: String, block: suspend () -> T) {
         if (busy.value) return
         busy.value = true
         viewModelScope.launch {
             try {
                 errors.info(done(block()))
+                Timber.i("%s finished", operation)
             } catch (cancelled: CancellationException) {
+                Timber.i("%s cancelled", operation)
                 throw cancelled
             } catch (failure: Exception) {
-                errors.info("That did not work: ${failure.message ?: failure.javaClass.simpleName}")
+                Timber.e(failure, "%s failed", operation)
+                errors.info(failed)
             } finally {
                 busy.value = false
             }
