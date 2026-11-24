@@ -48,6 +48,7 @@ data class MapUiState(
     val hasHistory: Boolean = false,
     val recording: RecordingStatus = RecordingStatus.Off,
     val walk: WalkRoute? = null,
+    val showFindNew: Boolean = true,
 )
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -79,7 +80,7 @@ class MapViewModel(
         Periods.range(selected, now(), zone, visits.minOfOrNull { it.firstSeen }).start
     }.distinctUntilChanged().mapLatest { since -> history.streaks(since) }
 
-    private val base = combine(history.cellVisits, period, status, activeWalk) { visits, selected, recording, walk ->
+    private val base = combine(history.cellVisits, period, status, activeWalk, preferences.foundSomethingNew) { visits, selected, recording, walk, found ->
         val range = Periods.range(selected, now(), zone, visits.minOfOrNull { it.firstSeen })
         val shown = visits.filter { it.lastSeen >= range.start }
         MapUiState(
@@ -90,6 +91,7 @@ class MapViewModel(
             hasHistory = visits.isNotEmpty(),
             recording = recording,
             walk = walk,
+            showFindNew = !found,
         )
     }
 
@@ -144,6 +146,10 @@ class MapViewModel(
     fun snoozeReminder() {
         val tomorrow = Instant.ofEpochMilli(now()).atZone(zone).toLocalDate().plusDays(1).atTime(LocalTime.of(9, 0)).atZone(zone)
         preferences.snoozeReminderUntil(tomorrow.toInstant().toEpochMilli())
+    }
+
+    fun findSomethingNew() {
+        preferences.setFoundSomethingNew(true)
     }
 
     fun endWalk() {

@@ -20,6 +20,7 @@ class Preferences(context: Context) {
     private val mutableRecording = MutableStateFlow(prefs.getBoolean(RECORDING, false))
     private val mutableSnoozedUntil = MutableStateFlow(prefs.getLong(SNOOZE, 0L))
     private val mutableDeveloperOptions = MutableStateFlow(prefs.getBoolean(DEVELOPER, false))
+    private val mutableFoundSomethingNew = MutableStateFlow(prefs.getBoolean(FOUND_NEW, false))
 
     val studyConsent: StateFlow<Boolean> = mutableStudyConsent.asStateFlow()
     val blurHome: StateFlow<Boolean> = mutableBlurHome.asStateFlow()
@@ -27,11 +28,13 @@ class Preferences(context: Context) {
     val recording: StateFlow<Boolean> = mutableRecording.asStateFlow()
     val reminderSnoozedUntil: StateFlow<Long> = mutableSnoozedUntil.asStateFlow()
     val developerOptions: StateFlow<Boolean> = mutableDeveloperOptions.asStateFlow()
+    val foundSomethingNew: StateFlow<Boolean> = mutableFoundSomethingNew.asStateFlow()
 
     fun setStudyConsent(value: Boolean) = save(STUDY, value) { mutableStudyConsent.value = it }
     fun setBlurHome(value: Boolean) = save(BLUR, value) { mutableBlurHome.value = it }
     fun setRecording(value: Boolean) = save(RECORDING, value) { mutableRecording.value = it }
     fun setDeveloperOptions(value: Boolean) = save(DEVELOPER, value) { mutableDeveloperOptions.value = it }
+    fun setFoundSomethingNew(value: Boolean) = save(FOUND_NEW, value) { mutableFoundSomethingNew.value = it }
 
     fun setRetention(value: Retention) {
         prefs.edit().putString(RETENTION, value.name).apply()
@@ -55,5 +58,6 @@ class Preferences(context: Context) {
         const val RECORDING = "recording"
         const val SNOOZE = "reminder_snoozed_until"
         const val DEVELOPER = "developer_options"
+        const val FOUND_NEW = "found_something_new"
     }
 }

@@ -351,10 +351,13 @@ private fun MapRoute(container: AppContainer, nav: NavHostController, calculator
     MapScreen(
         state,
         MapActions(
-            onSearch = { nav.navigate(Discover(focusSearch = true)) },
+            onSearch = { nav.navigate(Discover()) },
             onProfile = { nav.navigate(Privacy) },
             onPeriod = vm::selectPeriod,
-            onFindNew = { nav.navigate(Discover()) },
+            onFindNew = {
+                vm.findSomethingNew()
+                nav.navigate(Discover())
+            },
             onStartRecording = { permissions.launch(Permissions.foreground) },
             onFixRecording = { batterySaver -> if (batterySaver) SystemState.openBatterySaver(context) else SystemState.openLocationSettings(context) },
             onLater = vm::snoozeReminder,

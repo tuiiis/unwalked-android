@@ -181,9 +181,11 @@ private fun BottomCard(state: MapUiState, actions: MapActions, modifier: Modifie
                     }
                 }
                 Spacer(Modifier.height(6.dp))
-                PrimaryButton("Find something new", actions.onFindNew, Modifier.testTag("findNew"))
                 if (state.recording == RecordingStatus.Off) {
-                    SecondaryButton("Start recording", actions.onStartRecording, Modifier.fillMaxWidth())
+                    PrimaryButton("Start recording", actions.onStartRecording, Modifier.testTag("startRecording"))
+                }
+                if (state.showFindNew) {
+                    SecondaryButton("Find something new", actions.onFindNew, Modifier.fillMaxWidth().testTag("findNew"))
                 }
             }
         }
