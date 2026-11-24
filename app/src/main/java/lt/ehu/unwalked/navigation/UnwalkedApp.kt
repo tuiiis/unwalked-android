@@ -204,6 +204,7 @@ private fun MainFlow(container: AppContainer) {
                         nav.switchTab(MapHome)
                     },
                     onRetry = vm::build,
+                    onAccept = vm::accept,
                     map = { modifier, route ->
                         HeatMap(container.h3, cells.map { lt.ehu.unwalked.core.ui.map.HeatCell(it.h3, it.passes) }, modifier, streaks = streaks, route = route?.path.orEmpty(), position = route?.path?.firstOrNull()?.let { MapMarker(it.lat, it.lon) }, fitToRoute = true, walkedStreets = container.walkedStreets::lines, showLoading = false)
                     },

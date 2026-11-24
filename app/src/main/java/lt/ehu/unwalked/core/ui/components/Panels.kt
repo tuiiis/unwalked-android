@@ -93,7 +93,7 @@ fun MessageState(
     ) {
         Icon(icon, contentDescription = null, tint = Palette.Muted)
         Text(title, style = MaterialTheme.typography.titleMedium, textAlign = TextAlign.Center)
-        Text(body, style = MaterialTheme.typography.bodyMedium, color = Palette.Muted, textAlign = TextAlign.Center)
+        if (body.isNotEmpty()) Text(body, style = MaterialTheme.typography.bodyMedium, color = Palette.Muted, textAlign = TextAlign.Center)
         action?.let { (label, onClick) ->
             Spacer(Modifier.width(0.dp))
             SecondaryButton(label, onClick)

@@ -6,6 +6,7 @@ import com.uber.h3core.H3Core
 import kotlin.math.abs
 import kotlin.math.roundToInt
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -32,7 +33,9 @@ import lt.ehu.unwalked.domain.validation.WalkLength
 
 sealed interface RouteUiState {
     data object Building : RouteUiState
+    data object Slow : RouteUiState
     data class Ready(val route: WalkRoute) : RouteUiState
+    data class Closest(val route: WalkRoute) : RouteUiState
     data class Failed(val message: String) : RouteUiState
 }
 
@@ -55,6 +58,10 @@ class RouteViewModel(
 
     fun build() {
         mutableState.value = RouteUiState.Building
+        val slow = viewModelScope.launch {
+            delay(SLOW_MILLIS)
+            if (mutableState.value == RouteUiState.Building) mutableState.value = RouteUiState.Slow
+        }
         viewModelScope.launch {
             val origin = start()?.let { LatLon(it.lat, it.lon) } ?: FALLBACK_START
             val visited = habitual.habitual().visited
@@ -62,25 +69,34 @@ class RouteViewModel(
             val target = request.destination
             val routed = if (target != null) routes.walking(listOf(origin, target)) else planned(origin, visited, nearby)
             mutableState.value = when (routed) {
-                is Outcome.Success -> RouteUiState.Ready(
-                    withContext(Dispatchers.Default) {
+                is Outcome.Success -> {
+                    val route = withContext(Dispatchers.Default) {
                         val path = Spurs.trim(routed.value.path)
                         describe(path, routed.value.metres - (Spurs.length(routed.value.path) - Spurs.length(path)), visited, nearby)
-                    },
-                )
+                    }
+                    if (target == null && !fits(route.metres)) RouteUiState.Closest(route) else RouteUiState.Ready(route)
+                }
 
                 is Outcome.Failure -> {
                     errors.log(routed.error)
                     RouteUiState.Failed(ErrorReporter.userText(routed.error))
                 }
             }
+            slow.cancel()
         }
     }
+
+    fun accept() {
+        val closest = mutableState.value as? RouteUiState.Closest ?: return
+        mutableState.value = RouteUiState.Ready(closest.route)
+    }
+
+    private fun fits(metres: Double): Boolean = abs(metres / 1000 - request.kilometres) / request.kilometres <= TOLERANCE
 
     private suspend fun planned(origin: LatLon, visited: Set<Long>, nearby: List<PlaceCandidate>): Outcome<RoutedPath> {
         val best = withContext(Dispatchers.Default) { choosePlan(origin, request.kilometres, visited, nearby) }
         val routed = routes.walking(best.waypoints)
-        if (routed !is Outcome.Success || abs(routed.value.metres / 1000 - request.kilometres) / request.kilometres <= TOLERANCE) return routed
+        if (routed !is Outcome.Success || fits(routed.value.metres)) return routed
         val corrected = request.kilometres * request.kilometres / (routed.value.metres / 1000)
         val retry = routes.walking(planner.plan(origin, corrected, request.shape, best.bearingDegrees).waypoints)
         return if (retry is Outcome.Success && abs(retry.value.metres / 1000 - request.kilometres) < abs(routed.value.metres / 1000 - request.kilometres)) retry else routed
@@ -126,7 +142,8 @@ class RouteViewModel(
 
     private companion object {
         val FALLBACK_START = LatLon(54.6872, 25.2797)
-        const val TOLERANCE = 0.25
+        const val TOLERANCE = 0.10
+        const val SLOW_MILLIS = 5_000L
         const val NEARBY_RINGS = 3
         const val PLACE_LIMIT = 200
         const val PLACE_RADIUS = 120.0

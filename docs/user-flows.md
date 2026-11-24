@@ -53,6 +53,8 @@ flowchart LR
 2. The user chooses a loop or a different end point and whether to prefer new streets or places
 3. Route preview tries eight directions, picks the one that crosses the most unvisited cells, and asks the routing service for a walking route through it
 4. The preview shows length, time, new streets, new places and the share of the route that is still unwalked. "Start walk" puts the route on the map
+5. If no route comes within 10% of the chosen length, the preview says "Closest route is 3.3 km" with the real length. "Use 3.3 km" accepts it, "Change" goes back to the length
+6. If planning takes longer than 5 seconds, the preview says "This takes longer than usual" with "Try a shorter walk", which goes back to the length
 
 ## S4. Stats
 

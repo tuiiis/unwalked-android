@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material.icons.outlined.HourglassEmpty
 import androidx.compose.material.icons.outlined.WrongLocation
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
@@ -26,6 +27,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
+import java.util.Locale
 import lt.ehu.unwalked.core.ui.components.MessageState
 import lt.ehu.unwalked.core.ui.components.PrimaryButton
 import lt.ehu.unwalked.core.ui.components.SecondaryButton
@@ -41,6 +43,7 @@ fun RoutePreviewScreen(
     onChange: () -> Unit,
     onStart: (WalkRoute) -> Unit,
     onRetry: () -> Unit,
+    onAccept: () -> Unit,
     map: @Composable (Modifier, WalkRoute?) -> Unit,
 ) {
     Column(Modifier.fillMaxSize().background(Palette.Background)) {
@@ -49,8 +52,8 @@ fun RoutePreviewScreen(
             Text("Your route", style = MaterialTheme.typography.titleLarge, modifier = Modifier.semantics { heading() })
         }
         Box(Modifier.fillMaxWidth().weight(1f)) {
-            map(Modifier.fillMaxSize(), (state as? RouteUiState.Ready)?.route)
-            if (state is RouteUiState.Building) {
+            map(Modifier.fillMaxSize(), (state as? RouteUiState.Ready)?.route ?: (state as? RouteUiState.Closest)?.route)
+            if (state is RouteUiState.Building || state is RouteUiState.Slow) {
                 Row(
                     Modifier
                         .align(Alignment.TopCenter)
@@ -74,21 +77,40 @@ fun RoutePreviewScreen(
                     SkeletonBlock(Modifier.fillMaxWidth().height(52.dp))
                 }
 
+                RouteUiState.Slow -> MessageState(Icons.Outlined.HourglassEmpty, "This takes longer than usual", "", action = "Try a shorter walk" to onChange)
+
                 is RouteUiState.Failed -> MessageState(Icons.Outlined.WrongLocation, "Could not build a route", state.message, action = "Try again" to onRetry)
 
                 is RouteUiState.Ready -> {
                     Text(state.route.title, style = MaterialTheme.typography.titleMedium)
-                    Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                        StatTile(state.route.newCells.toString(), "new streets", Modifier.weight(1f))
-                        StatTile(state.route.newPlaces.toString(), if (state.route.newPlaces == 1) "new place" else "new places", Modifier.weight(1f))
-                        StatTile("${state.route.unknownPercent}%", "unwalked", Modifier.weight(1f))
-                    }
+                    RouteTiles(state.route)
                     Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                         SecondaryButton("Change", onChange, Modifier.weight(1f))
                         PrimaryButton("Start walk", { onStart(state.route) }, Modifier.weight(1f))
+                    }
+                }
+
+                is RouteUiState.Closest -> {
+                    val length = kilometres(state.route)
+                    Text("Closest route is $length", style = MaterialTheme.typography.titleMedium)
+                    RouteTiles(state.route)
+                    Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                        SecondaryButton("Change", onChange, Modifier.weight(1f))
+                        PrimaryButton("Use $length", onAccept, Modifier.weight(1f))
                     }
                 }
             }
         }
     }
 }
+
+@Composable
+private fun RouteTiles(route: WalkRoute) {
+    Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+        StatTile(route.newCells.toString(), "new streets", Modifier.weight(1f))
+        StatTile(route.newPlaces.toString(), if (route.newPlaces == 1) "new place" else "new places", Modifier.weight(1f))
+        StatTile("${route.unknownPercent}%", "unwalked", Modifier.weight(1f))
+    }
+}
+
+private fun kilometres(route: WalkRoute): String = String.format(Locale.US, "%.1f km", route.metres / 1000)
