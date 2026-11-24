@@ -153,12 +153,12 @@ class ScreenshotTest {
 
     @Test
     fun routeReady() = capture("13-route") {
-        RoutePreviewScreen(RouteUiState.Ready(sampleRoute), {}, {}, {}, {}, {}) { modifier, _ -> fakeMap(modifier) }
+        RoutePreviewScreen(RouteUiState.Ready(sampleRoute), {}, {}, {}, {}, {}) { modifier, _, _, _ -> fakeMap(modifier) }
     }
 
     @Test
     fun routeBuilding() = capture("14-route-building") {
-        RoutePreviewScreen(RouteUiState.Building, {}, {}, {}, {}, {}) { modifier, _ -> fakeMap(modifier) }
+        RoutePreviewScreen(RouteUiState.Building, {}, {}, {}, {}, {}) { modifier, _, _, _ -> fakeMap(modifier) }
     }
 
     @Test

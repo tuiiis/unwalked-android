@@ -1,5 +1,6 @@
 package lt.ehu.unwalked.core.ui.map
 
+import android.graphics.RectF
 import android.os.Bundle
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
@@ -15,6 +16,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -66,6 +68,8 @@ data class HeatCell(val cell: Long, val passes: Int)
 
 data class MapMarker(val lat: Double, val lon: Double, val label: String? = null)
 
+data class MapPlace(val id: Long, val lat: Double, val lon: Double)
+
 @Composable
 fun HeatMap(
     h3: H3Core,
@@ -80,8 +84,12 @@ fun HeatMap(
     initialCentre: LatLon = LatLon(54.6872, 25.2797),
     walkedStreets: suspend (List<Streak>) -> List<GlowLine> = { emptyList() },
     showLoading: Boolean = true,
+    places: List<MapPlace> = emptyList(),
+    selectedPlace: Long? = null,
+    onPlaceClick: (Long?) -> Unit = {},
 ) {
     val palette = LocalPalette.current
+    val currentOnPlaceClick by rememberUpdatedState(onPlaceClick)
     val context = LocalContext.current
     val lifecycle = LocalLifecycleOwner.current.lifecycle
     var map by remember { mutableStateOf<MapLibreMap?>(null) }
@@ -146,6 +154,21 @@ fun HeatMap(
                         PropertyFactory.lineCap(Property.LINE_CAP_ROUND),
                     ),
                 )
+                ready.addSource(GeoJsonSource(PLACES))
+                ready.addLayer(
+                    CircleLayer(PLACES, PLACES).withProperties(
+                        PropertyFactory.circleRadius(Expression.switchCase(Expression.get(SELECTED), Expression.literal(9f), Expression.literal(6f))),
+                        PropertyFactory.circleColor(Expression.switchCase(Expression.get(SELECTED), Expression.color(palette.warning.toArgb()), Expression.color(palette.accent.toArgb()))),
+                        PropertyFactory.circleStrokeColor(palette.background.toArgb()),
+                        PropertyFactory.circleStrokeWidth(2.5f),
+                    ),
+                )
+                loaded.addOnMapClickListener { tapped ->
+                    val screen = loaded.projection.toScreenLocation(tapped)
+                    val hit = loaded.queryRenderedFeatures(RectF(screen.x - TAP_SLOP, screen.y - TAP_SLOP, screen.x + TAP_SLOP, screen.y + TAP_SLOP), PLACES).firstOrNull()
+                    currentOnPlaceClick(hit?.getNumberProperty(PLACE_ID)?.toLong())
+                    hit != null
+                }
                 ready.addLayer(
                     CircleLayer(MARKER, MARKER).withProperties(
                         PropertyFactory.circleRadius(9f),
@@ -251,6 +274,17 @@ fun HeatMap(
             }
         }
         target.animateCamera(update, FOCUS_MILLIS)
+    }
+
+    LaunchedEffect(style, places, selectedPlace) {
+        val ready = style ?: return@LaunchedEffect
+        val features = places.map { place ->
+            Feature.fromGeometry(Point.fromLngLat(place.lon, place.lat)).apply {
+                addNumberProperty(PLACE_ID, place.id)
+                addBooleanProperty(SELECTED, place.id == selectedPlace)
+            }
+        }
+        (ready.getSource(PLACES) as? GeoJsonSource)?.setGeoJson(FeatureCollection.fromFeatures(features))
     }
 
     LaunchedEffect(style, position) {
@@ -397,3 +431,7 @@ private const val CONTEXT_MAX_METERS = 1_500.0
 private const val BUSIEST_AREA_RESOLUTION = 8
 private const val MARKER = "marker"
 private const val POSITION = "position"
+private const val PLACES = "places"
+private const val PLACE_ID = "id"
+private const val SELECTED = "selected"
+private const val TAP_SLOP = 24f

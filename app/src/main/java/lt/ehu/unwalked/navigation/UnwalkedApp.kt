@@ -44,6 +44,7 @@ import kotlin.reflect.KClass
 import lt.ehu.unwalked.AppContainer
 import lt.ehu.unwalked.core.ui.map.HeatMap
 import lt.ehu.unwalked.core.ui.map.MapMarker
+import lt.ehu.unwalked.core.ui.map.MapPlace
 import lt.ehu.unwalked.core.ui.motion.Motion
 import lt.ehu.unwalked.core.ui.theme.Palette
 import lt.ehu.unwalked.data.history.Cells
@@ -205,8 +206,22 @@ private fun MainFlow(container: AppContainer) {
                     },
                     onRetry = vm::build,
                     onAccept = vm::accept,
-                    map = { modifier, route ->
-                        HeatMap(container.h3, cells.map { lt.ehu.unwalked.core.ui.map.HeatCell(it.h3, it.passes) }, modifier, streaks = streaks, route = route?.path.orEmpty(), position = route?.path?.firstOrNull()?.let { MapMarker(it.lat, it.lon) }, fitToRoute = true, walkedStreets = container.walkedStreets::lines, showLoading = false)
+                    map = { modifier, route, selected, onSelect ->
+                        HeatMap(
+                            container.h3,
+                            cells.map { lt.ehu.unwalked.core.ui.map.HeatCell(it.h3, it.passes) },
+                            modifier,
+                            streaks = streaks,
+                            route = route?.path.orEmpty(),
+                            position = route?.path?.firstOrNull()?.let { MapMarker(it.lat, it.lon) },
+                            fitToRoute = true,
+                            coveredBottom = ROUTE_SHEET_SHARE,
+                            walkedStreets = container.walkedStreets::lines,
+                            showLoading = false,
+                            places = route?.places?.map { MapPlace(it.id, it.lat, it.lon) }.orEmpty(),
+                            selectedPlace = selected,
+                            onPlaceClick = onSelect,
+                        )
                     },
                 )
             }
@@ -366,3 +381,5 @@ private fun NavHostController.switchTab(route: Any) {
         launchSingleTop = true
     }
 }
+
+private const val ROUTE_SHEET_SHARE = 0.35f

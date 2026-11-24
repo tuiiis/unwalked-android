@@ -18,6 +18,7 @@ import lt.ehu.unwalked.data.history.Cells
 import lt.ehu.unwalked.data.places.PlacesRepository
 import lt.ehu.unwalked.data.route.RouteRepository
 import lt.ehu.unwalked.data.route.RoutedPath
+import lt.ehu.unwalked.domain.recommendation.CategoryGroup
 import lt.ehu.unwalked.domain.recommendation.HabitualPoint
 import lt.ehu.unwalked.domain.recommendation.HabitualSource
 import lt.ehu.unwalked.domain.recommendation.PlaceCandidate
@@ -128,15 +129,20 @@ class RouteViewModel(
             previous = cell
         }
         val newCells = cells.count { it !in visited }
-        val newPlaces = nearby.count { it.cell !in visited && it.cell in cells }
+        val onRoute = nearby
+            .filter { it.cell !in visited && it.name.isNotBlank() && CategoryGroup.of(it.category) != CategoryGroup.Other }
+            .filter { place -> path.any { GeoMath.distanceMeters(it.lat, it.lon, place.lat, place.lon) <= PLACE_RADIUS } }
+            .distinctBy { it.id }
+            .sortedBy { place -> path.indices.minByOrNull { GeoMath.distanceMeters(path[it].lat, path[it].lon, place.lat, place.lon) } ?: 0 }
         return WalkRoute(
             path = path,
             metres = metres,
             minutes = (metres / 1000 / WalkLength.WALKING_KMH * 60).roundToInt(),
             shape = request.shape,
             newCells = newCells,
-            newPlaces = newPlaces,
+            newPlaces = onRoute.size,
             unknownPercent = if (cells.isEmpty()) 0 else (100.0 * newCells / cells.size).roundToInt(),
+            places = onRoute,
         )
     }
 

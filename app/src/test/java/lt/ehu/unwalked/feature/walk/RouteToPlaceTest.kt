@@ -12,6 +12,7 @@ import lt.ehu.unwalked.core.error.Outcome
 import lt.ehu.unwalked.data.route.RouteRepository
 import lt.ehu.unwalked.data.route.RoutedPath
 import lt.ehu.unwalked.domain.recommendation.HabitualPoint
+import lt.ehu.unwalked.domain.recommendation.PlaceCandidate
 import lt.ehu.unwalked.domain.route.LatLon
 import lt.ehu.unwalked.domain.route.RoutePlanner
 import lt.ehu.unwalked.domain.route.RoutePreference
@@ -103,5 +104,37 @@ class RouteToPlaceTest {
         advanceTimeBy(5_001)
         assertEquals(RouteUiState.Slow, vm.state.value)
         vm.viewModelScope.cancel()
+    }
+
+    @Test
+    fun routeListsNamedPlacesNearTheLineInOrder() = runTest {
+        val h3 = H3Core.newInstance()
+        val start = LatLon(54.6872, 25.2797)
+        val end = LatLon(54.6962, 25.2797)
+        fun place(id: Long, name: String, category: String, north: Double, east: Double): PlaceCandidate {
+            val lat = start.lat + north / 111_320.0
+            val lon = start.lon + east / (111_320.0 * Math.cos(Math.toRadians(start.lat)))
+            return PlaceCandidate(id, name, category, lat, lon, h3.latLngToCell(lat, lon, 11))
+        }
+        val far = place(1, "Far Cafe", "cafe", 500.0, 600.0)
+        val late = place(2, "Late Bakery", "bakery", 900.0, 40.0)
+        val early = place(3, "Early Park", "park", 100.0, -60.0)
+        val unnamed = place(4, "", "cafe", 300.0, 10.0)
+        val salon = place(5, "Salon", "beauty_salon", 400.0, 10.0)
+        val vm = RouteViewModel(
+            RouteRequest(1.0, RouteShape.OneWay, RoutePreference.Places, destination = end),
+            FakeHabitualSource(emptyMap(), emptyList()),
+            { HabitualPoint(start.lat, start.lon) },
+            object : RouteRepository {
+                override suspend fun walking(waypoints: List<LatLon>): Outcome<RoutedPath> = Outcome.Success(RoutedPath((0..10).map { LatLon(start.lat + (end.lat - start.lat) * it / 10, start.lon) }, 1000.0))
+            },
+            FakePlacesRepository(Outcome.Success(listOf(far, late, early, unnamed, salon))),
+            RoutePlanner(),
+            h3,
+            ErrorReporter(),
+        )
+        val ready = vm.state.first { it is RouteUiState.Ready } as RouteUiState.Ready
+        assertEquals(listOf("Early Park", "Late Bakery"), ready.route.places.map { it.name })
+        assertEquals(2, ready.route.newPlaces)
     }
 }

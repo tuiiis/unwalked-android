@@ -1,5 +1,7 @@
 package lt.ehu.unwalked.domain.route
 
+import lt.ehu.unwalked.domain.recommendation.PlaceCandidate
+
 data class WalkRoute(
     val path: List<LatLon>,
     val metres: Double,
@@ -8,6 +10,7 @@ data class WalkRoute(
     val newCells: Int,
     val newPlaces: Int,
     val unknownPercent: Int,
+    val places: List<PlaceCandidate> = emptyList(),
 ) {
     val title: String
         get() {

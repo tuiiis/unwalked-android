@@ -52,7 +52,7 @@ flowchart LR
 1. On the Walk tab the user sets the length with a slider from 1 to 10 km in steps of 0.5 km. The walking time is shown next to the distance
 2. The user chooses a loop or a different end point and whether to prefer new streets or places
 3. Route preview tries eight directions, picks the one that crosses the most unvisited cells, and asks the routing service for a walking route through it
-4. The preview shows length, time, new streets, new places and the share of the route that is still unwalked. "Start walk" puts the route on the map
+4. The preview shows length, time, new streets, new places and the share of the route that is still unwalked. New places within 120 m of the route are points on the map, and tapping one shows its name and type. The panel slides up to list all of them in route order. "Start walk" puts the route on the map
 5. If no route comes within 10% of the chosen length, the preview says "Closest route is 3.3 km" with the real length. "Use 3.3 km" accepts it, "Change" goes back to the length
 6. If planning takes longer than 5 seconds, the preview says "This takes longer than usual" with "Try a shorter walk", which goes back to the length
 7. During the walk, two accurate fixes in a row more than 50 m from the line rebuild the route from the current position without a dialog. A snackbar says "Route updated", and "Walk freely" removes the route and keeps the walk
