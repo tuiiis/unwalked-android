@@ -4,11 +4,6 @@ import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.tween
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import lt.ehu.unwalked.core.ui.motion.Motion
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -32,6 +27,10 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
@@ -44,6 +43,7 @@ import lt.ehu.unwalked.core.ui.components.PrimaryButton
 import lt.ehu.unwalked.core.ui.components.SecondaryButton
 import lt.ehu.unwalked.core.ui.components.SkeletonBlock
 import lt.ehu.unwalked.core.ui.components.WarningBanner
+import lt.ehu.unwalked.core.ui.motion.Motion
 import lt.ehu.unwalked.core.ui.theme.Palette
 import lt.ehu.unwalked.domain.stats.Period
 import lt.ehu.unwalked.tracking.RecordingStatus
@@ -80,8 +80,11 @@ fun MapScreen(state: MapUiState, actions: MapActions, map: @Composable (Modifier
                 val stopped = lastStopped ?: return@AnimatedVisibility
                 WarningBanner(
                     title = "Recording stopped ${ago(stopped.minutesWithoutFix)}",
-                    body = if (stopped.batterySaver) "Battery saver is on, so the phone paused location. Your map has a gap for this time."
-                    else "The phone has not sent a location for a while. Your map has a gap for this time.",
+                    body = if (stopped.batterySaver) {
+                        "Battery saver is on, so the phone paused location. Your map has a gap for this time."
+                    } else {
+                        "The phone has not sent a location for a while. Your map has a gap for this time."
+                    },
                     primaryAction = (if (stopped.batterySaver) "Turn off battery saver" else "Check location settings") to { actions.onFixRecording(stopped.batterySaver) },
                     secondaryAction = "Later" to actions.onLater,
                 )
@@ -143,6 +146,7 @@ private fun BottomCard(state: MapUiState, actions: MapActions, modifier: Modifie
                 Spacer(Modifier.height(6.dp))
                 SkeletonBlock(Modifier.fillMaxWidth().height(52.dp))
             }
+
             walk != null -> {
                 Text("Walking", style = MaterialTheme.typography.labelMedium, color = Palette.Warning)
                 Text(walk.title, style = MaterialTheme.typography.titleMedium)
@@ -150,11 +154,15 @@ private fun BottomCard(state: MapUiState, actions: MapActions, modifier: Modifie
                 Spacer(Modifier.height(6.dp))
                 SecondaryButton("End walk", actions.onEndWalk, Modifier.fillMaxWidth())
             }
+
             summary == null -> {
                 Text("Your map is empty", style = MaterialTheme.typography.titleMedium)
                 Text(
-                    if (state.recording == RecordingStatus.Off) "Turn on recording and go for a walk. The map fills in as you move."
-                    else "Recording is on. Go for a walk and the map fills in as you move.",
+                    if (state.recording == RecordingStatus.Off) {
+                        "Turn on recording and go for a walk. The map fills in as you move."
+                    } else {
+                        "Recording is on. Go for a walk and the map fills in as you move."
+                    },
                     style = MaterialTheme.typography.bodyMedium,
                     color = Palette.Muted,
                 )
@@ -164,6 +172,7 @@ private fun BottomCard(state: MapUiState, actions: MapActions, modifier: Modifie
                 }
                 SecondaryButton(if (state.importing) "Loading a sample week…" else "Try a sample week in Vilnius", actions.onSample, Modifier.fillMaxWidth(), enabled = !state.importing)
             }
+
             else -> {
                 AnimatedContent(summary, transitionSpec = { Motion.crossfade() }, label = "summary") { shown ->
                     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {

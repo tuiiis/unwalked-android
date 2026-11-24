@@ -138,11 +138,13 @@ class StreetGraph(streets: List<List<LatLon>>) {
     private fun node(x: Double, y: Double): Int {
         val cx = floor(x / MERGE_METRES).toLong()
         val cy = floor(y / MERGE_METRES).toLong()
-        for (dx in -1L..1L) for (dy in -1L..1L) {
-            cells[pack(cx + dx, cy + dy)]?.forEach { candidate ->
-                val ex = xs[candidate] - x
-                val ey = ys[candidate] - y
-                if (ex * ex + ey * ey <= MERGE_METRES * MERGE_METRES) return candidate
+        for (dx in -1L..1L) {
+            for (dy in -1L..1L) {
+                cells[pack(cx + dx, cy + dy)]?.forEach { candidate ->
+                    val ex = xs[candidate] - x
+                    val ey = ys[candidate] - y
+                    if (ex * ex + ey * ey <= MERGE_METRES * MERGE_METRES) return candidate
+                }
             }
         }
         if (count == xs.size) {
@@ -162,16 +164,18 @@ class StreetGraph(streets: List<List<LatLon>>) {
         val cy = floor(y / MERGE_METRES).toLong()
         var best = -1
         var bestDistance = reach * reach
-        for (dx in -steps..steps) for (dy in -steps..steps) {
-            cells[pack(cx + dx, cy + dy)]?.forEach { candidate ->
-                if (candidate == exclude || candidate == skip) return@forEach
-                if (connected && offsets[candidate] == offsets[candidate + 1]) return@forEach
-                val ex = xs[candidate] - x
-                val ey = ys[candidate] - y
-                val d = ex * ex + ey * ey
-                if (d <= bestDistance) {
-                    bestDistance = d
-                    best = candidate
+        for (dx in -steps..steps) {
+            for (dy in -steps..steps) {
+                cells[pack(cx + dx, cy + dy)]?.forEach { candidate ->
+                    if (candidate == exclude || candidate == skip) return@forEach
+                    if (connected && offsets[candidate] == offsets[candidate + 1]) return@forEach
+                    val ex = xs[candidate] - x
+                    val ey = ys[candidate] - y
+                    val d = ex * ex + ey * ey
+                    if (d <= bestDistance) {
+                        bestDistance = d
+                        best = candidate
+                    }
                 }
             }
         }

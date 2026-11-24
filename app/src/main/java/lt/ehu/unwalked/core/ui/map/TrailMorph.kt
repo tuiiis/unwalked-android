@@ -113,15 +113,17 @@ class TrailMorph private constructor(
                 var sx = 0.0
                 var sy = 0.0
                 var weight = 0.0
-                for (dx in -1L..1L) for (dy in -1L..1L) {
-                    val bucket = cells[key(cx + dx, cy + dy)] ?: continue
-                    val px = bucket[0] / bucket[2]
-                    val py = bucket[1] / bucket[2]
-                    val d = sqrt((px - x) * (px - x) + (py - y) * (py - y)) / size
-                    val w = bucket[2] * exp(-d * d)
-                    sx += px * w
-                    sy += py * w
-                    weight += w
+                for (dx in -1L..1L) {
+                    for (dy in -1L..1L) {
+                        val bucket = cells[key(cx + dx, cy + dy)] ?: continue
+                        val px = bucket[0] / bucket[2]
+                        val py = bucket[1] / bucket[2]
+                        val d = sqrt((px - x) * (px - x) + (py - y) * (py - y)) / size
+                        val w = bucket[2] * exp(-d * d)
+                        sx += px * w
+                        sy += py * w
+                        weight += w
+                    }
                 }
                 return if (weight == 0.0) x to y else sx / weight to sy / weight
             }

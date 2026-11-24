@@ -54,6 +54,7 @@ class WalkViewModel : ViewModel() {
         val current = mutableState.value
         return when (val parsed = WalkLength.parse(current.text, current.measure)) {
             is WalkLength.Valid -> RouteRequest(parsed.kilometres, current.shape, current.preference)
+
             is WalkLength.Invalid -> {
                 mutableState.update { it.copy(error = parsed.message) }
                 null

@@ -59,20 +59,22 @@ object StreetGlow {
                 var best = metres * metres
                 var stay = -1
                 var stayBest = Double.MAX_VALUE
-                for (dx in -1L..1L) for (dy in -1L..1L) {
-                    index[key(x + dx, y + dy)]?.forEach { i ->
-                        val (sx, sy) = directions[i]
-                        if ((hx != 0.0 || hy != 0.0) && abs(hx * sx + hy * sy) < PARALLEL_COS) return@forEach
-                        val ex = (midpoints[i].lon - point.lon) * metresPerLon
-                        val ey = (midpoints[i].lat - point.lat) * METRES_PER_LAT
-                        val distance = ex * ex + ey * ey
-                        if (distance <= best) {
-                            best = distance
-                            nearest = i
-                        }
-                        if ((owners[i] ushr 32).toInt() == previous && distance < stayBest) {
-                            stayBest = distance
-                            stay = i
+                for (dx in -1L..1L) {
+                    for (dy in -1L..1L) {
+                        index[key(x + dx, y + dy)]?.forEach { i ->
+                            val (sx, sy) = directions[i]
+                            if ((hx != 0.0 || hy != 0.0) && abs(hx * sx + hy * sy) < PARALLEL_COS) return@forEach
+                            val ex = (midpoints[i].lon - point.lon) * metresPerLon
+                            val ey = (midpoints[i].lat - point.lat) * METRES_PER_LAT
+                            val distance = ex * ex + ey * ey
+                            if (distance <= best) {
+                                best = distance
+                                nearest = i
+                            }
+                            if ((owners[i] ushr 32).toInt() == previous && distance < stayBest) {
+                                stayBest = distance
+                                stay = i
+                            }
                         }
                     }
                 }
@@ -100,13 +102,15 @@ object StreetGlow {
         repeat(CORNER_PASSES) {
             fun litNear(street: Int, point: LatLon): Boolean {
                 val (x, y) = cell(point)
-                for (dx in -1L..1L) for (dy in -1L..1L) {
-                    index[key(x + dx, y + dy)]?.forEach { i ->
-                        val other = (owners[i] ushr 32).toInt()
-                        if (other == street || buckets[other][(owners[i] and 0xffffffffL).toInt()] == 0) return@forEach
-                        val ex = (midpoints[i].lon - point.lon) * metresPerLon
-                        val ey = (midpoints[i].lat - point.lat) * METRES_PER_LAT
-                        if (ex * ex + ey * ey <= CORNER_METRES * CORNER_METRES) return true
+                for (dx in -1L..1L) {
+                    for (dy in -1L..1L) {
+                        index[key(x + dx, y + dy)]?.forEach { i ->
+                            val other = (owners[i] ushr 32).toInt()
+                            if (other == street || buckets[other][(owners[i] and 0xffffffffL).toInt()] == 0) return@forEach
+                            val ex = (midpoints[i].lon - point.lon) * metresPerLon
+                            val ey = (midpoints[i].lat - point.lat) * METRES_PER_LAT
+                            if (ex * ex + ey * ey <= CORNER_METRES * CORNER_METRES) return true
+                        }
                     }
                 }
                 return false
@@ -227,7 +231,7 @@ object StreetGlow {
             val point = points[p]
             val (hx, hy) = heading(points, p, metresPerLon)
             return nearby(point, MAGNET_METRES).firstOrNull { (_, near, direction) ->
-                distance(near, point) <= MAGNET_METRES && (hx == 0.0 && hy == 0.0 || abs(hx * direction.first + hy * direction.second) >= PARALLEL_COS)
+                distance(near, point) <= MAGNET_METRES && ((hx == 0.0 && hy == 0.0) || abs(hx * direction.first + hy * direction.second) >= PARALLEL_COS)
             }?.first
         }
 
@@ -284,12 +288,14 @@ object StreetGlow {
         fun near(owner: Int, point: LatLon): Boolean {
             val x = floor(point.lon * metresPerLon / JOIN_METRES).toLong()
             val y = floor(point.lat * METRES_PER_LAT / JOIN_METRES).toLong()
-            for (dx in -1L..1L) for (dy in -1L..1L) {
-                cells[pack(x + dx, y + dy)]?.forEach { (other, near) ->
-                    if (other == owner) return@forEach
-                    val ex = (near.lon - point.lon) * metresPerLon
-                    val ey = (near.lat - point.lat) * METRES_PER_LAT
-                    if (ex * ex + ey * ey <= JOIN_METRES * JOIN_METRES) return true
+            for (dx in -1L..1L) {
+                for (dy in -1L..1L) {
+                    cells[pack(x + dx, y + dy)]?.forEach { (other, near) ->
+                        if (other == owner) return@forEach
+                        val ex = (near.lon - point.lon) * metresPerLon
+                        val ey = (near.lat - point.lat) * METRES_PER_LAT
+                        if (ex * ex + ey * ey <= JOIN_METRES * JOIN_METRES) return true
+                    }
                 }
             }
             return false

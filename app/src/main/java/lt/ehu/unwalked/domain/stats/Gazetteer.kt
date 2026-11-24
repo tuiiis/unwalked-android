@@ -16,12 +16,14 @@ class Gazetteer(cities: List<City>) {
         val column = floor(lon).toInt()
         var best: City? = null
         var bestKm = maxKm
-        for (dy in -1..1) for (dx in -1..1) {
-            cells[(row + dy) * 1000 + (column + dx)]?.forEach { city ->
-                val km = GeoMath.distanceMeters(lat, lon, city.lat, city.lon) / 1000
-                if (km <= bestKm) {
-                    bestKm = km
-                    best = city
+        for (dy in -1..1) {
+            for (dx in -1..1) {
+                cells[(row + dy) * 1000 + (column + dx)]?.forEach { city ->
+                    val km = GeoMath.distanceMeters(lat, lon, city.lat, city.lon) / 1000
+                    if (km <= bestKm) {
+                        bestKm = km
+                        best = city
+                    }
                 }
             }
         }

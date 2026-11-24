@@ -28,6 +28,7 @@ class RoutePlanner(private val detourFactor: Double = 1.25) {
                 val points = listOf(90.0, 180.0, 270.0).map { offset -> destination(centre, back + offset, radius) }
                 RoutePlan(listOf(start) + points + start, bearingDegrees)
             }
+
             RouteShape.OneWay -> {
                 val end = destination(start, bearingDegrees, metres * 0.8)
                 val middle = destination(destination(start, bearingDegrees, metres * 0.4), bearingDegrees + 90, metres * 0.2)

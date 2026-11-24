@@ -34,6 +34,7 @@ class FeedbackRepository(
                 } else {
                     return sent
                 }
+
                 is Outcome.Failure -> return sent
             }
         }

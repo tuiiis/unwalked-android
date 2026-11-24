@@ -20,9 +20,9 @@ import lt.ehu.unwalked.data.local.FeedbackOutboxEntity
 import lt.ehu.unwalked.data.local.HiddenPlaceDao
 import lt.ehu.unwalked.data.local.HiddenPlaceEntity
 import lt.ehu.unwalked.data.places.PlacesRepository
+import lt.ehu.unwalked.domain.recommendation.Habits
 import lt.ehu.unwalked.domain.recommendation.HabitualPoint
 import lt.ehu.unwalked.domain.recommendation.HabitualSource
-import lt.ehu.unwalked.domain.recommendation.Habits
 import lt.ehu.unwalked.domain.recommendation.PlaceCandidate
 import okhttp3.ResponseBody.Companion.toResponseBody
 import retrofit2.Response

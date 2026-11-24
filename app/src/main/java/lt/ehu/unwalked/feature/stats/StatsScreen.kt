@@ -94,10 +94,12 @@ fun StatsScreen(state: StatsUiState, onPeriod: (Period) -> Unit, onOpenMap: () -
                 }
                 SkeletonBlock(Modifier.fillMaxWidth().height(220.dp))
             }
+
             stats.isEmpty -> {
                 Header(range.title, range.subtitle)
                 MessageState(Icons.Outlined.QueryStats, "No walks in this period", "Stats appear after the first recorded walk.", action = "Open the map" to onOpenMap)
             }
+
             else -> {
                 Header(range.title, range.subtitle)
                 Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {

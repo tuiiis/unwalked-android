@@ -68,6 +68,7 @@ class RouteViewModel(
                         describe(path, routed.value.metres - (Spurs.length(routed.value.path) - Spurs.length(path)), visited, nearby)
                     },
                 )
+
                 is Outcome.Failure -> {
                     errors.log(routed.error)
                     RouteUiState.Failed(ErrorReporter.userText(routed.error))

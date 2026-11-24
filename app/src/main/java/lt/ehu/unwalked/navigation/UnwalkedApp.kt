@@ -1,9 +1,8 @@
 package lt.ehu.unwalked.navigation
 
-import androidx.compose.animation.Crossfade
-import lt.ehu.unwalked.core.ui.motion.Motion
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
@@ -43,6 +42,7 @@ import kotlin.reflect.KClass
 import lt.ehu.unwalked.AppContainer
 import lt.ehu.unwalked.core.ui.map.HeatMap
 import lt.ehu.unwalked.core.ui.map.MapMarker
+import lt.ehu.unwalked.core.ui.motion.Motion
 import lt.ehu.unwalked.core.ui.theme.Palette
 import lt.ehu.unwalked.data.history.Cells
 import lt.ehu.unwalked.domain.recommendation.CandidateCells
@@ -51,8 +51,8 @@ import lt.ehu.unwalked.domain.route.LatLon
 import lt.ehu.unwalked.domain.route.RoutePlanner
 import lt.ehu.unwalked.domain.route.RoutePreference
 import lt.ehu.unwalked.domain.route.RouteShape
-import lt.ehu.unwalked.domain.stats.StatsCalculator
 import lt.ehu.unwalked.domain.stats.Periods
+import lt.ehu.unwalked.domain.stats.StatsCalculator
 import lt.ehu.unwalked.feature.auth.AuthMode
 import lt.ehu.unwalked.feature.auth.AuthScreen
 import lt.ehu.unwalked.feature.auth.AuthViewModel

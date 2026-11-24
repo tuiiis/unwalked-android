@@ -79,7 +79,9 @@ class RecommendationEngineTest {
     fun filterSearchesNameAndCategoryAndSorts() {
         val ranked = engine.rank(
             listOf(place(1, "Near cafe", "cafe", 24.0), place(2, "Far cafe", "coffee_shop", 240.0), place(3, "Old church", "church", 120.0)),
-            emptySet(), listOf(home), emptySet(),
+            emptySet(),
+            listOf(home),
+            emptySet(),
         )
         assertEquals(listOf("Near cafe", "Old church", "Far cafe"), engine.filter(ranked, "", CategoryGroup.All, SortOrder.BestMatch).map { it.place.name })
         assertEquals(listOf("Near cafe", "Old church", "Far cafe"), engine.filter(ranked, "", CategoryGroup.All, SortOrder.Closest).map { it.place.name })

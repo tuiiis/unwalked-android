@@ -1,15 +1,8 @@
 package lt.ehu.unwalked.feature.discover
 
-import androidx.compose.runtime.produceState
-import androidx.compose.runtime.getValue
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
-import coil3.compose.AsyncImage
-import coil3.request.ImageRequest
-import coil3.request.crossfade
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -48,6 +41,8 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -56,12 +51,17 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import coil3.compose.AsyncImage
+import coil3.request.ImageRequest
+import coil3.request.crossfade
 import kotlinx.coroutines.delay
 import lt.ehu.unwalked.core.ui.components.ChipRow
 import lt.ehu.unwalked.core.ui.components.MessageState
@@ -134,6 +134,7 @@ fun DiscoverScreen(state: DiscoverUiState, actions: DiscoverActions, focusSearch
 private fun Content(state: DiscoverUiState, actions: DiscoverActions, modifier: Modifier) {
     when (val content = state.content) {
         DiscoverContent.Loading -> LoadingList(modifier)
+
         DiscoverContent.NoHistory -> MessageState(
             Icons.Outlined.Explore,
             "Nothing to compare with yet",
@@ -141,7 +142,9 @@ private fun Content(state: DiscoverUiState, actions: DiscoverActions, modifier: 
             modifier,
             "Open the map" to actions.onOpenMap,
         )
+
         is DiscoverContent.Failed -> MessageState(Icons.Outlined.CloudOff, "Could not load places", content.message, modifier, "Try again" to actions.onRetry)
+
         is DiscoverContent.Ready -> LazyColumn(
             modifier.testTag("results"),
             contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 96.dp),

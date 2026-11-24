@@ -18,11 +18,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
@@ -216,9 +216,13 @@ fun HeatMap(
 
     LaunchedEffect(style, route, fitToRoute) {
         val ready = style ?: return@LaunchedEffect
-        val line = if (route.size < 2) FeatureCollection.fromFeatures(emptyList()) else FeatureCollection.fromFeature(
-            Feature.fromGeometry(LineString.fromLngLats(route.map { Point.fromLngLat(it.lon, it.lat) })),
-        )
+        val line = if (route.size < 2) {
+            FeatureCollection.fromFeatures(emptyList())
+        } else {
+            FeatureCollection.fromFeature(
+                Feature.fromGeometry(LineString.fromLngLats(route.map { Point.fromLngLat(it.lon, it.lat) })),
+            )
+        }
         (ready.getSource(ROUTE) as? GeoJsonSource)?.setGeoJson(line)
         if (fitToRoute && route.size >= 2) {
             val bounds = LatLngBounds.Builder().includes(route.map { LatLng(it.lat, it.lon) }).build()
@@ -238,8 +242,11 @@ fun HeatMap(
             val bounds = LatLngBounds.Builder().include(LatLng(marker.lat, marker.lon)).include(LatLng(nearest.lat, nearest.lng)).build()
             val padding = (mapView.width * 0.22f).toInt()
             val fitted = target.getCameraForLatLngBounds(bounds, intArrayOf(padding, padding * 2, padding, padding * 3))
-            if (fitted == null) CameraUpdateFactory.newLatLngZoom(LatLng(marker.lat, marker.lon), FOCUS_ZOOM)
-            else CameraUpdateFactory.newCameraPosition(CameraPosition.Builder(fitted).zoom(minOf(fitted.zoom, FOCUS_ZOOM)).build())
+            if (fitted == null) {
+                CameraUpdateFactory.newLatLngZoom(LatLng(marker.lat, marker.lon), FOCUS_ZOOM)
+            } else {
+                CameraUpdateFactory.newCameraPosition(CameraPosition.Builder(fitted).zoom(minOf(fitted.zoom, FOCUS_ZOOM)).build())
+            }
         }
         target.animateCamera(update, FOCUS_MILLIS)
     }
@@ -284,27 +291,32 @@ private fun byZoom(vararg stops: Pair<Float, Float>): Expression =
 
 private fun trailLayers(): List<LineLayer> = listOf(
     trailLayer(
-        "$TRAIL-off-bloom", onStreet = false,
+        "$TRAIL-off-bloom",
+        onStreet = false,
         width = byZoom(8.5f to 30f, 10f to 24f, 12f to 19f, 13.5f to 22f, 17f to 34f),
         blur = byZoom(8.5f to 24f, 10f to 19f, 12f to 15f, 13.5f to 18f, 17f to 30f),
     ),
     trailLayer(
-        "$TRAIL-off-core", onStreet = false,
+        "$TRAIL-off-core",
+        onStreet = false,
         width = byZoom(8.5f to 9f, 10f to 7.5f, 12f to 5.5f, 13.5f to 6f, 17f to 10f),
         blur = byZoom(8.5f to 3f, 10f to 2f, 12f to 1f, 13.5f to 1f, 17f to 3f),
     ),
     trailLayer(
-        "$TRAIL-bloom", onStreet = true,
+        "$TRAIL-bloom",
+        onStreet = true,
         width = byZoom(8.5f to 30f, 10f to 24f, 12.5f to 22f, 14f to 15f, 15f to 18f, 17f to 34f),
         blur = byZoom(8.5f to 24f, 10f to 19f, 12.5f to 18f, 14f to 11f, 15f to 16f, 17f to 30f),
     ),
     trailLayer(
-        "$TRAIL-halo", onStreet = true,
+        "$TRAIL-halo",
+        onStreet = true,
         width = byZoom(8.5f to 12f, 10f to 10f, 12.5f to 8f, 14f to 5f, 15f to 6f, 17f to 11f),
         blur = byZoom(8.5f to 8f, 10f to 6.5f, 12.5f to 5f, 14f to 2.5f, 15f to 3.5f, 17f to 7f),
     ),
     trailLayer(
-        "$TRAIL-core", onStreet = true,
+        "$TRAIL-core",
+        onStreet = true,
         width = byZoom(8.5f to 6f, 10f to 4.5f, 12.5f to 3f, 14f to 1.6f, 15f to 2f, 17f to 3.5f),
         blur = null,
     ),
@@ -357,7 +369,6 @@ private fun lineFeatures(lines: List<GlowLine>): FeatureCollection =
             }
         },
     )
-
 
 private const val TRAIL = "trail"
 private const val ROUTE = "route"

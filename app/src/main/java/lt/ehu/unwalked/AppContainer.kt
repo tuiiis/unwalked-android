@@ -1,7 +1,9 @@
 package lt.ehu.unwalked
 
 import android.content.Context
+import androidx.room.withTransaction
 import com.uber.h3core.H3Core
+import java.io.File
 import kotlinx.coroutines.flow.MutableStateFlow
 import lt.ehu.unwalked.core.error.ErrorReporter
 import lt.ehu.unwalked.core.network.NetworkModule
@@ -9,26 +11,24 @@ import lt.ehu.unwalked.core.network.SafeApiCall
 import lt.ehu.unwalked.core.network.UnwalkedApi
 import lt.ehu.unwalked.core.session.KeystoreTokenStore
 import lt.ehu.unwalked.core.session.TokenStore
+import lt.ehu.unwalked.core.ui.map.MapStyle
 import lt.ehu.unwalked.data.auth.AuthRepository
 import lt.ehu.unwalked.data.auth.RemoteAuthRepository
 import lt.ehu.unwalked.data.feedback.FeedbackRepository
 import lt.ehu.unwalked.data.history.Cells
 import lt.ehu.unwalked.data.history.HistoryRepository
 import lt.ehu.unwalked.data.local.UnwalkedDatabase
-import androidx.room.withTransaction
+import lt.ehu.unwalked.data.photos.PlacePhotos
 import lt.ehu.unwalked.data.places.PlacesRepository
 import lt.ehu.unwalked.data.places.RemotePlacesRepository
 import lt.ehu.unwalked.data.route.OsrmRouteRepository
 import lt.ehu.unwalked.data.route.RouteRepository
 import lt.ehu.unwalked.data.settings.Preferences
+import lt.ehu.unwalked.data.streets.CachedTileSource
+import lt.ehu.unwalked.data.streets.WalkedStreets
 import lt.ehu.unwalked.domain.route.WalkRoute
 import lt.ehu.unwalked.domain.stats.Gazetteer
 import lt.ehu.unwalked.domain.tracking.Streak
-import lt.ehu.unwalked.data.photos.PlacePhotos
-import lt.ehu.unwalked.data.streets.CachedTileSource
-import lt.ehu.unwalked.data.streets.WalkedStreets
-import lt.ehu.unwalked.core.ui.map.MapStyle
-import java.io.File
 import okhttp3.OkHttpClient
 
 class AppContainer(context: Context) {

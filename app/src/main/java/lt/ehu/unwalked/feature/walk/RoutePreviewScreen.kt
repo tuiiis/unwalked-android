@@ -73,7 +73,9 @@ fun RoutePreviewScreen(
                     Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) { repeat(3) { SkeletonBlock(Modifier.weight(1f).height(64.dp)) } }
                     SkeletonBlock(Modifier.fillMaxWidth().height(52.dp))
                 }
+
                 is RouteUiState.Failed -> MessageState(Icons.Outlined.WrongLocation, "Could not build a route", state.message, action = "Try again" to onRetry)
+
                 is RouteUiState.Ready -> {
                     Text(state.route.title, style = MaterialTheme.typography.titleMedium)
                     Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {

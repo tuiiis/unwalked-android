@@ -10,9 +10,9 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import lt.ehu.unwalked.data.local.CellEntity
 import lt.ehu.unwalked.data.local.TrackDao
+import lt.ehu.unwalked.domain.recommendation.Habits
 import lt.ehu.unwalked.domain.recommendation.HabitualPoint
 import lt.ehu.unwalked.domain.recommendation.HabitualSource
-import lt.ehu.unwalked.domain.recommendation.Habits
 import lt.ehu.unwalked.domain.recommendation.UsualCells
 import lt.ehu.unwalked.domain.stats.CellVisit
 import lt.ehu.unwalked.domain.stats.StayVisit
@@ -105,15 +105,30 @@ class HistoryRepository(
     suspend fun export(output: OutputStream) = withContext(Dispatchers.IO) {
         val root = JSONObject()
         root.put("format", "unwalked-export-1")
-        root.put("cells", JSONArray(dao.cellsNow(Cells.RESOLUTION).map {
-            JSONObject().put("h3", h3.h3ToString(it.h3)).put("passes", it.passes).put("firstSeen", it.firstSeen).put("lastSeen", it.lastSeen)
-        }))
-        root.put("visits", JSONArray(dao.staysNow().map {
-            JSONObject().put("start", it.start).put("end", it.end).put("lat", it.lat).put("lon", it.lon)
-        }))
-        root.put("points", JSONArray(dao.pointsSince(0).map {
-            JSONObject().put("time", it.time).put("lat", it.lat).put("lon", it.lon).put("accuracy", it.accuracy.toDouble())
-        }))
+        root.put(
+            "cells",
+            JSONArray(
+                dao.cellsNow(Cells.RESOLUTION).map {
+                    JSONObject().put("h3", h3.h3ToString(it.h3)).put("passes", it.passes).put("firstSeen", it.firstSeen).put("lastSeen", it.lastSeen)
+                },
+            ),
+        )
+        root.put(
+            "visits",
+            JSONArray(
+                dao.staysNow().map {
+                    JSONObject().put("start", it.start).put("end", it.end).put("lat", it.lat).put("lon", it.lon)
+                },
+            ),
+        )
+        root.put(
+            "points",
+            JSONArray(
+                dao.pointsSince(0).map {
+                    JSONObject().put("time", it.time).put("lat", it.lat).put("lon", it.lon).put("accuracy", it.accuracy.toDouble())
+                },
+            ),
+        )
         output.write(root.toString().toByteArray(Charsets.UTF_8))
     }
 
@@ -125,5 +140,4 @@ class HistoryRepository(
         const val IMPORT_BATCH = 2_000
         const val GOOGLE = "google"
     }
-
 }

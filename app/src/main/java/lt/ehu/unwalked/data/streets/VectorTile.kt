@@ -119,6 +119,7 @@ object VectorTile {
                     i += 2
                     if (command == MOVE_TO) lines += mutableListOf(x to y) else lines.lastOrNull()?.add(x to y)
                 }
+
                 else -> Unit
             }
         }

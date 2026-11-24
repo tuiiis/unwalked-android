@@ -10,7 +10,7 @@ permissions:
 
 jobs:
   build:
-    name: Lint, tests and debug build
+    name: Style, lint, tests and debug build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -19,6 +19,8 @@ jobs:
           distribution: temurin
           java-version: 17
       - uses: gradle/actions/setup-gradle@v6
+      - name: ktlint
+        run: ./gradlew :app:ktlintCheck
       - name: Android Lint
         run: ./gradlew :app:lintDebug
       - name: Unit and UI tests
@@ -30,6 +32,7 @@ jobs:
         with:
           name: reports
           path: |
+            app/build/reports/ktlint
             app/build/reports/lint-results-debug.html
             app/build/reports/tests/testDebugUnitTest
       - uses: actions/upload-artifact@v7

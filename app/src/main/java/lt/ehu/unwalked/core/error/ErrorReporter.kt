@@ -22,7 +22,9 @@ class ErrorReporter(private val log: (String, String) -> Unit = { tag, text -> L
                 mutableSignOuts.tryEmit(Unit)
                 mutableMessages.tryEmit(UserMessage("Your session has ended. Sign in again."))
             }
+
             is AppError.Validation -> Unit
+
             else -> mutableMessages.tryEmit(UserMessage(userText(error), retry?.let { "Retry" }, retry))
         }
     }

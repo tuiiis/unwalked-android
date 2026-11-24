@@ -49,7 +49,9 @@ All tests run on the JVM, including the Compose UI tests (Robolectric). No emula
 
 ## Continuous integration
 
-GitHub Actions runs [ci.yml](.github/workflows/ci.yml) on every push and pull request: Android Lint, all JVM tests, and a debug build. The lint and test reports and the APK are attached to each run.
+GitHub Actions runs [ci.yml](.github/workflows/ci.yml) on every push and pull request: ktlint, Android Lint, all JVM tests, and a debug build. The lint and test reports and the APK are attached to each run.
+
+Code style is checked by ktlint with the Android Studio rules, configured in [.editorconfig](.editorconfig). Run `./gradlew ktlintFormat` before committing to fix most findings automatically.
 
 ## Where the Front-end criterion is implemented
 

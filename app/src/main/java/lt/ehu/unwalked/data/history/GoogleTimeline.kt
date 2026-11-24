@@ -13,6 +13,7 @@ object GoogleTimeline {
         JsonReader(input.bufferedReader()).use { reader ->
             when (reader.peek()) {
                 JsonToken.BEGIN_ARRAY -> eachElement(reader) { segment(it, found) }
+
                 JsonToken.BEGIN_OBJECT -> {
                     reader.beginObject()
                     while (reader.hasNext()) {
@@ -25,6 +26,7 @@ object GoogleTimeline {
                     }
                     reader.endObject()
                 }
+
                 else -> throw IllegalArgumentException("Not a Google Timeline file")
             }
         }
@@ -88,6 +90,7 @@ object GoogleTimeline {
             reader.endObject()
             map
         }
+
         JsonToken.BEGIN_ARRAY -> {
             val list = ArrayList<Any?>()
             reader.beginArray()
@@ -95,9 +98,13 @@ object GoogleTimeline {
             reader.endArray()
             list
         }
+
         JsonToken.NUMBER -> reader.nextDouble()
+
         JsonToken.BOOLEAN -> reader.nextBoolean()
+
         JsonToken.NULL -> reader.nextNull().let { null }
+
         else -> reader.nextString()
     }
 

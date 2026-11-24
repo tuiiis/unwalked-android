@@ -45,7 +45,8 @@ enum class CategoryGroup(val label: String) {
     Nature("Parks"),
     Culture("Culture"),
     Shops("Shops"),
-    Other("Other");
+    Other("Other"),
+    ;
 
     companion object {
         private val keywords = listOf(

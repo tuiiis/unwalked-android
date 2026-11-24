@@ -5,6 +5,7 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.ksp)
+    alias(libs.plugins.ktlint)
 }
 
 val apiBaseUrl = providers.gradleProperty("unwalked.apiBaseUrl").get()
@@ -118,4 +119,9 @@ dependencies {
     testImplementation(libs.compose.ui.test.junit4)
     testImplementation(libs.roborazzi)
     testImplementation(libs.roborazzi.compose)
+}
+
+ktlint {
+    version.set(libs.versions.ktlint)
+    android.set(true)
 }

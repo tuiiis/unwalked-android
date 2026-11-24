@@ -1,7 +1,6 @@
 package lt.ehu.unwalked.feature.auth
 
 import androidx.compose.animation.AnimatedVisibility
-import lt.ehu.unwalked.core.ui.motion.Motion
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -49,6 +48,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import lt.ehu.unwalked.core.ui.components.PrimaryButton
+import lt.ehu.unwalked.core.ui.motion.Motion
 import lt.ehu.unwalked.core.ui.theme.Palette
 
 @Composable
@@ -75,8 +75,11 @@ fun AuthScreen(
         Icon(Icons.AutoMirrored.Outlined.DirectionsWalk, contentDescription = null, tint = Palette.Accent, modifier = Modifier.size(40.dp))
         Text(if (register) "Create an account" else "Welcome to Unwalked", style = MaterialTheme.typography.headlineSmall)
         Text(
-            if (register) "Your walks stay on this phone. The account only keeps your place in the study."
-            else "Sign in to see where you have not walked yet.",
+            if (register) {
+                "Your walks stay on this phone. The account only keeps your place in the study."
+            } else {
+                "Sign in to see where you have not walked yet."
+            },
             style = MaterialTheme.typography.bodyMedium,
             color = Palette.Muted,
         )

@@ -109,6 +109,7 @@ private fun Label(text: String) {
 
 private fun display(state: WalkFormState): String = when (state.measure) {
     WalkMeasure.Distance -> "${WalkLength.format(state.slider)} km"
+
     WalkMeasure.Time -> {
         val minutes = state.slider.toInt()
         if (minutes >= 60) "${minutes / 60} h ${(minutes % 60).takeIf { it > 0 }?.let { "$it min" } ?: ""}".trim() else "$minutes min"

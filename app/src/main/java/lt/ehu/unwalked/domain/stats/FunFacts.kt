@@ -21,7 +21,8 @@ enum class DayBand(val title: String, val phrase: String, val hours: IntRange) {
     Morning("Morning walker", "before noon", 5..10),
     Afternoon("Afternoon stroller", "in the afternoon", 11..16),
     Evening("Evening wanderer", "after 17:00", 17..21),
-    Night("Night owl", "after dark", 22..28);
+    Night("Night owl", "after dark", 22..28),
+    ;
 
     fun contains(hour: Int): Boolean = hour in hours || hour + 24 in hours
 }

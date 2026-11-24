@@ -24,6 +24,7 @@ object Periods {
                     subtitle = "What is new this month",
                 )
             }
+
             Period.Quarter -> {
                 val first = today.withMonth((today.monthValue - 1) / 3 * 3 + 1).withDayOfMonth(1)
                 PeriodRange(
@@ -34,6 +35,7 @@ object Periods {
                     subtitle = "What is new this quarter",
                 )
             }
+
             Period.Year -> {
                 val first = today.withDayOfYear(1)
                 PeriodRange(
@@ -44,6 +46,7 @@ object Periods {
                     subtitle = "What is new this year",
                 )
             }
+
             Period.AllTime -> {
                 val since = firstDataMillis?.let { Instant.ofEpochMilli(it).atZone(zone).toLocalDate() }
                 PeriodRange(

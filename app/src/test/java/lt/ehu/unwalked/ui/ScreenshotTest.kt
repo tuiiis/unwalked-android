@@ -142,7 +142,8 @@ class ScreenshotTest {
                 stats = PeriodStats(26, 140, 3, 41.2, 38, 4, Walk(0, 4.2), 412),
                 longestWalkDay = "12 November",
             ),
-            {}, {},
+            {},
+            {},
         )
     }
 

@@ -90,6 +90,7 @@ class DiscoverViewModel(
                     all.value = engine.rank(result.value, habits.visited, habits.centres, emptySet())
                     loaded.value = DiscoverContent.Ready(emptyList(), 0)
                 }
+
                 is Outcome.Failure -> {
                     loaded.value = DiscoverContent.Failed(failureText(result.error))
                     errors.log(result.error)

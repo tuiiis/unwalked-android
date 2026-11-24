@@ -67,7 +67,9 @@ class AuthViewModel(
     private fun handle(error: AppError) {
         when (error) {
             is AppError.Unauthorized -> mutableState.update { it.copy(formError = "Email or password is incorrect.") }
+
             is AppError.Conflict -> mutableState.update { it.copy(errors = it.errors.copy(email = "An account with this email already exists. Sign in instead.")) }
+
             is AppError.Validation -> mutableState.update {
                 it.copy(
                     errors = it.errors.copy(
@@ -77,6 +79,7 @@ class AuthViewModel(
                     formError = if (error.fields.isEmpty()) error.message else null,
                 )
             }
+
             else -> {
                 mutableState.update { it.copy(formError = ErrorReporter.userText(error)) }
                 errors.report(error, retry = ::submit)
