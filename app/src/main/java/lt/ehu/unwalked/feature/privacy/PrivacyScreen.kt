@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
@@ -21,6 +22,7 @@ import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -42,6 +44,7 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.DialogProperties
 import lt.ehu.unwalked.BuildConfig
 import lt.ehu.unwalked.core.ui.theme.Palette
 import lt.ehu.unwalked.data.settings.Retention
@@ -53,6 +56,7 @@ data class PrivacyActions(
     val onRetention: (Retention) -> Unit = {},
     val onExport: () -> Unit = {},
     val onImportTimeline: () -> Unit = {},
+    val onCancelImport: () -> Unit = {},
     val onDelete: () -> Unit = {},
     val onSample: () -> Unit = {},
     val onVersion: () -> Unit = {},
@@ -76,7 +80,7 @@ fun PrivacyScreen(state: PrivacyUiState, online: Boolean, actions: PrivacyAction
         Divider()
         LinkRow(
             "Import Google Timeline",
-            "Timeline.json from Settings › Location › Timeline › Export. Only walks are added",
+            "Timeline.json from Settings › Location › Location services › Timeline › Export Timeline data. Only walks are added",
             enabled = !state.busy,
             onClick = actions.onImportTimeline,
         )
@@ -108,6 +112,17 @@ fun PrivacyScreen(state: PrivacyUiState, online: Boolean, actions: PrivacyAction
         }
         LinkRow("Version", BuildConfig.VERSION_NAME, onClick = actions.onVersion)
         Spacer(Modifier.height(96.dp))
+    }
+    if (state.importing) {
+        AlertDialog(
+            onDismissRequest = {},
+            properties = DialogProperties(dismissOnBackPress = false, dismissOnClickOutside = false),
+            icon = { CircularProgressIndicator(Modifier.size(32.dp).testTag("importProgress")) },
+            title = { Text("Importing Google Timeline") },
+            text = { Text("This can take a minute. Keep the app open.") },
+            confirmButton = {},
+            dismissButton = { OutlinedButton(onClick = actions.onCancelImport) { Text("Cancel") } },
+        )
     }
     if (confirmDelete) {
         AlertDialog(

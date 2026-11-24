@@ -296,6 +296,7 @@ private fun MainFlow(container: AppContainer) {
                         onExport = { exporter.launch("unwalked-export.json") },
                         onImportTimeline = { timeline.launch(arrayOf("application/json", "application/octet-stream", "text/plain")) },
                         onDelete = vm::deleteAll,
+                        onCancelImport = vm::cancelImport,
                         onSample = vm::loadSample,
                         onVersion = vm::tapVersion,
                         onSignOut = vm::signOut,

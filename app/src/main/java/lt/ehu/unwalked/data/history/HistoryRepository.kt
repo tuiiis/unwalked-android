@@ -5,6 +5,7 @@ import com.uber.h3core.H3Core
 import java.io.InputStream
 import java.io.OutputStream
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
@@ -92,9 +93,15 @@ class HistoryRepository(
         val after = dao.lastPointTime(GOOGLE) ?: Long.MIN_VALUE
         val before = dao.firstPointTimeExcept(listOf(GOOGLE, "sample")) ?: Long.MAX_VALUE
         val fixes = input.use { GoogleTimeline.parse(it) }.filter { it.time > after && it.time < before }
+        ensureActive()
         val pipeline = TrackPipeline(dao, h3, GOOGLE)
-        fixes.chunked(IMPORT_BATCH).forEach { batch -> transaction { batch.forEach { pipeline.accept(it) } } }
-        transaction { pipeline.finish() }
+        transaction {
+            fixes.forEach {
+                ensureActive()
+                pipeline.accept(it)
+            }
+            pipeline.finish()
+        }
         fixes.size
     }
 

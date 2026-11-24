@@ -7,6 +7,7 @@ import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
+import androidx.test.espresso.Espresso
 import lt.ehu.unwalked.core.ui.theme.UnwalkedTheme
 import lt.ehu.unwalked.feature.privacy.PrivacyActions
 import lt.ehu.unwalked.feature.privacy.PrivacyScreen
@@ -42,5 +43,19 @@ class PrivacyScreenTest {
         compose.onNodeWithText("Developer options").performScrollTo().assertIsDisplayed()
         compose.onNodeWithText("Load a sample week in Vilnius").performScrollTo().performClick()
         assertEquals(true, loaded)
+    }
+
+    @Test
+    fun importBlocksTheScreenUntilCancelled() {
+        var cancelled = 0
+        var back = 0
+        compose.setContent { UnwalkedTheme { PrivacyScreen(PrivacyUiState(importing = true, busy = true), online = true, PrivacyActions(onCancelImport = { cancelled++ }, onBack = { back++ })) } }
+
+        compose.onNodeWithText("Importing Google Timeline").assertIsDisplayed()
+        Espresso.pressBackUnconditionally()
+        compose.onNodeWithText("Importing Google Timeline").assertIsDisplayed()
+        compose.onNodeWithText("Cancel").performClick()
+        assertEquals(1, cancelled)
+        assertEquals(0, back)
     }
 }
