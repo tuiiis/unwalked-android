@@ -7,6 +7,7 @@
 | Architecture | MVVM with `StateFlow` | Recommended by the Android architecture guide. ViewModels survive configuration changes and are testable without a device |
 | Navigation | Navigation Compose, type-safe routes | Back stack and typed arguments without custom code. Routes are plain serializable classes, so a wrong argument fails at compile time |
 | Network | Retrofit, OkHttp, kotlinx.serialization | A typed interface for the API, interceptors for auth and logging, no reflection for JSON |
+| Logging | Timber | Logs go to Logcat only in debug builds. Release builds log nothing, so locations and errors never reach the system log |
 | Local storage | Room | Location history is relational (points, cells, stays) and queried by time. Room gives compile-time checked SQL and Flows |
 | Token storage | Android Keystore with AES-GCM | The token never lies in plain text on disk |
 | Map | MapLibre Native | Open source, renders vector tiles and custom layers, no API key or usage fees |

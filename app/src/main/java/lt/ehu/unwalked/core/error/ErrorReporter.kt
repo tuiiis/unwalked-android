@@ -1,14 +1,14 @@
 package lt.ehu.unwalked.core.error
 
-import android.util.Log
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
+import timber.log.Timber
 
 data class UserMessage(val text: String, val actionLabel: String? = null, val onAction: (() -> Unit)? = null)
 
-class ErrorReporter(private val log: (String, String) -> Unit = { tag, text -> Log.w(tag, text) }) {
+class ErrorReporter(private val log: (String, String) -> Unit = { tag, text -> Timber.tag(tag).w(text) }) {
     private val mutableMessages = MutableSharedFlow<UserMessage>(extraBufferCapacity = 8, onBufferOverflow = BufferOverflow.DROP_OLDEST)
     private val mutableSignOuts = MutableSharedFlow<Unit>(extraBufferCapacity = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
 

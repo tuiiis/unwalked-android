@@ -2,7 +2,6 @@ package lt.ehu.unwalked
 
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
@@ -15,6 +14,7 @@ import kotlinx.coroutines.launch
 import lt.ehu.unwalked.core.ui.theme.Palette
 import lt.ehu.unwalked.core.ui.theme.UnwalkedTheme
 import lt.ehu.unwalked.navigation.UnwalkedApp
+import timber.log.Timber
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -43,7 +43,7 @@ class MainActivity : ComponentActivity() {
         if (!file.exists()) return
         lifecycleScope.launch {
             val imported = container.history.importTrack(file.inputStream(), intent.getStringExtra(EXTRA_SOURCE) ?: "import")
-            Log.i(TAG, "Imported $imported fixes from $name")
+            Timber.i("Imported %d fixes from %s", imported, name)
             Toast.makeText(this@MainActivity, "Imported $imported points", Toast.LENGTH_LONG).show()
         }
     }
@@ -51,6 +51,5 @@ class MainActivity : ComponentActivity() {
     private companion object {
         const val EXTRA_IMPORT_TRACK = "import_track"
         const val EXTRA_SOURCE = "source"
-        const val TAG = "Unwalked"
     }
 }

@@ -6,6 +6,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import org.maplibre.android.MapLibre
+import timber.log.Timber
 
 class UnwalkedApplication : Application() {
     lateinit var container: AppContainer
@@ -15,6 +16,7 @@ class UnwalkedApplication : Application() {
 
     override fun onCreate() {
         super.onCreate()
+        if (BuildConfig.DEBUG) Timber.plant(Timber.DebugTree())
         container = AppContainer(this)
         MapLibre.getInstance(this)
         scope.launch {

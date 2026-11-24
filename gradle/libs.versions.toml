@@ -21,6 +21,7 @@ junit = "4.13.2"
 robolectric = "4.16"
 roborazzi = "1.52.0"
 androidxTest = "1.7.0"
+timber = "5.0.1"
 ktlintGradle = "14.2.0"
 ktlint = "1.8.0"
 
@@ -61,6 +62,7 @@ junit = { group = "junit", name = "junit", version.ref = "junit" }
 robolectric = { group = "org.robolectric", name = "robolectric", version.ref = "robolectric" }
 roborazzi = { group = "io.github.takahirom.roborazzi", name = "roborazzi", version.ref = "roborazzi" }
 roborazzi-compose = { group = "io.github.takahirom.roborazzi", name = "roborazzi-compose", version.ref = "roborazzi" }
+timber = { group = "com.jakewharton.timber", name = "timber", version.ref = "timber" }
 androidx-test-core = { group = "androidx.test", name = "core-ktx", version.ref = "androidxTest" }
 
 [plugins]
