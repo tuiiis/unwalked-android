@@ -18,6 +18,7 @@ import lt.ehu.unwalked.data.feedback.FeedbackRepository
 import lt.ehu.unwalked.data.history.Cells
 import lt.ehu.unwalked.data.history.HistoryRepository
 import lt.ehu.unwalked.data.local.UnwalkedDatabase
+import lt.ehu.unwalked.data.photos.PhotoPrefetch
 import lt.ehu.unwalked.data.photos.PlacePhotos
 import lt.ehu.unwalked.data.places.PlacesRepository
 import lt.ehu.unwalked.data.places.RemotePlacesRepository
@@ -26,6 +27,7 @@ import lt.ehu.unwalked.data.route.RouteRepository
 import lt.ehu.unwalked.data.settings.Preferences
 import lt.ehu.unwalked.data.streets.CachedTileSource
 import lt.ehu.unwalked.data.streets.WalkedStreets
+import lt.ehu.unwalked.domain.recommendation.CandidateCells
 import lt.ehu.unwalked.domain.route.WalkRoute
 import lt.ehu.unwalked.domain.stats.Gazetteer
 import lt.ehu.unwalked.domain.tracking.Streak
@@ -50,7 +52,8 @@ class AppContainer(context: Context) {
     val auth: AuthRepository by lazy { RemoteAuthRepository(api, call, tokens) }
     val history: HistoryRepository by lazy { HistoryRepository(appContext, database.tracks(), h3) { block -> database.withTransaction { block() } } }
     val places: PlacesRepository by lazy { RemotePlacesRepository(api, call, h3) }
-    val photos: PlacePhotos by lazy { PlacePhotos(BuildConfig.MAPILLARY_TOKEN) }
+    val photos: PlacePhotos by lazy { PlacePhotos(BuildConfig.MAPILLARY_TOKEN, appContext.getSharedPreferences("photos", Context.MODE_PRIVATE)) }
+    val photoPrefetch: PhotoPrefetch by lazy { PhotoPrefetch(appContext, history, places, CandidateCells(h3, Cells.NEAR_QUERY_RESOLUTION), photos) }
     val routes: RouteRepository by lazy { OsrmRouteRepository(http, NetworkModule.json) }
     val gazetteer: Gazetteer by lazy { appContext.assets.open("cities.tsv").bufferedReader().useLines { Gazetteer.parse(it) } }
     val walkedStreets: WalkedStreets by lazy { WalkedStreets(CachedTileSource(OkHttpClient(), File(appContext.cacheDir, "streets"), MapStyle.TILES), File(appContext.cacheDir, "walked")) }
