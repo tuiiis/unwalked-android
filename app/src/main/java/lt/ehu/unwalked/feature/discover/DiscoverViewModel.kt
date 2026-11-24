@@ -2,7 +2,6 @@ package lt.ehu.unwalked.feature.discover
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import kotlin.math.ceil
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -88,7 +87,7 @@ class DiscoverViewModel(
                 loaded.value = DiscoverContent.NoHistory
                 return@launch
             }
-            when (val result = places.inCells(candidates.around(habits.usual, rings(radiusMetres)), LIMIT)) {
+            when (val result = places.inCells(candidates.around(habits.usual, radiusMetres), LIMIT)) {
                 is Outcome.Success -> {
                     all.value = engine.rank(result.value, habits.visited, habits.centres, emptySet(), radiusMetres)
                     loaded.value = DiscoverContent.Ready(emptyList(), 0, radiusMetres)
@@ -141,11 +140,8 @@ class DiscoverViewModel(
         else -> ErrorReporter.userText(error)
     }
 
-    private fun rings(radiusMetres: Double): Int = ceil(radiusMetres / RING_METRES).toInt().coerceAtLeast(1)
-
     companion object {
         const val TYPE = "nearby_new_place"
-        private const val RING_METRES = 260.0
         private const val LIMIT = 200
         private const val HIDE_MILLIS = 90L * 24 * 60 * 60_000
     }

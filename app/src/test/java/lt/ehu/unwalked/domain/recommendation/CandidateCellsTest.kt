@@ -27,4 +27,11 @@ class CandidateCellsTest {
     fun emptyHistoryGivesNoCells() {
         assertEquals(emptyList<String>(), CandidateCells(h3, 9).around(emptyMap()))
     }
+
+    @Test
+    fun ringsFollowTheCellSize() {
+        val visited = mapOf(h3.latLngToCell(54.6872, 25.2797, 11) to 1)
+        assertEquals(19, CandidateCells(h3, 9).around(visited, 500.0).size)
+        assertEquals(91, CandidateCells(h3, 10).around(visited, 500.0).size)
+    }
 }

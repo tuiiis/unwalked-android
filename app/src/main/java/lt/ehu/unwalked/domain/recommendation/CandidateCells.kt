@@ -1,9 +1,14 @@
 package lt.ehu.unwalked.domain.recommendation
 
 import com.uber.h3core.H3Core
+import com.uber.h3core.LengthUnit
+import kotlin.math.ceil
 
-class CandidateCells(private val h3: H3Core, private val queryResolution: Int, private val maxCells: Int = 400) {
-    fun around(visited: Map<Long, Int>, rings: Int = 1): List<String> {
+class CandidateCells(private val h3: H3Core, private val queryResolution: Int, private val maxCells: Int = 500) {
+    private val ringMetres = h3.getHexagonEdgeLengthAvg(queryResolution, LengthUnit.m) * 1.5
+
+    fun around(visited: Map<Long, Int>, radiusMetres: Double = ringMetres): List<String> {
+        val rings = ceil(radiusMetres / ringMetres).toInt().coerceAtLeast(1)
         if (visited.isEmpty()) return emptyList()
         val weight = mutableMapOf<Long, Int>()
         visited.forEach { (cell, passes) ->
