@@ -33,8 +33,8 @@ class ErrorReporter(private val log: (String, String) -> Unit = { tag, text -> T
         log(TAG, error.toString())
     }
 
-    fun info(text: String) {
-        mutableMessages.tryEmit(UserMessage(text))
+    fun info(text: String, actionLabel: String? = null, onAction: (() -> Unit)? = null) {
+        mutableMessages.tryEmit(UserMessage(text, actionLabel, onAction))
     }
 
     companion object {

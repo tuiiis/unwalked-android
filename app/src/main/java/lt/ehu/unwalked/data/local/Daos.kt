@@ -18,6 +18,9 @@ interface TrackDao {
     @Query("SELECT MAX(time) FROM point WHERE source = 'live'")
     fun lastLiveFix(): Flow<Long?>
 
+    @Query("SELECT * FROM point WHERE source = 'live' ORDER BY time DESC LIMIT 1")
+    fun latestLivePoint(): Flow<PointEntity?>
+
     @Query("UPDATE cell SET passes = passes + 1, lastSeen = :time WHERE h3 = :h3 AND resolution = :resolution")
     suspend fun incrementCell(h3: Long, resolution: Int, time: Long): Int
 

@@ -55,6 +55,7 @@ flowchart LR
 4. The preview shows length, time, new streets, new places and the share of the route that is still unwalked. "Start walk" puts the route on the map
 5. If no route comes within 10% of the chosen length, the preview says "Closest route is 3.3 km" with the real length. "Use 3.3 km" accepts it, "Change" goes back to the length
 6. If planning takes longer than 5 seconds, the preview says "This takes longer than usual" with "Try a shorter walk", which goes back to the length
+7. During the walk, two accurate fixes in a row more than 50 m from the line rebuild the route from the current position without a dialog. A snackbar says "Route updated", and "Walk freely" removes the route and keeps the walk
 
 ## S4. Stats
 

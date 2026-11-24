@@ -309,7 +309,7 @@ private fun MainFlow(container: AppContainer) {
 private fun MapRoute(container: AppContainer, nav: NavHostController, calculator: StatsCalculator) {
     val context = LocalContext.current
     val vm = rememberViewModel {
-        MapViewModel(container.history, container.preferences, container.activeWalk, { SystemState.batterySaver(context) }, calculator)
+        MapViewModel(container.history, container.preferences, container.activeWalk, { SystemState.batterySaver(context) }, calculator, container.routes, container.errors)
     }
     val state by vm.state.collectAsStateWithLifecycle()
     val recording by container.preferences.recording.collectAsStateWithLifecycle()

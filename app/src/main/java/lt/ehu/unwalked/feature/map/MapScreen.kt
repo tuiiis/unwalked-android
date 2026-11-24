@@ -149,8 +149,10 @@ private fun BottomCard(state: MapUiState, actions: MapActions, modifier: Modifie
 
             walk != null -> {
                 Text("Walking", style = MaterialTheme.typography.labelMedium, color = Palette.Warning)
-                Text(walk.title, style = MaterialTheme.typography.titleMedium)
-                Text("${walk.newCells} new streets on the way · ${walk.unknownPercent}% unwalked", style = MaterialTheme.typography.bodyMedium, color = Palette.Muted)
+                if (walk.path.isNotEmpty()) {
+                    Text(walk.title, style = MaterialTheme.typography.titleMedium)
+                    Text("${walk.newCells} new streets on the way · ${walk.unknownPercent}% unwalked", style = MaterialTheme.typography.bodyMedium, color = Palette.Muted)
+                }
                 Spacer(Modifier.height(6.dp))
                 SecondaryButton("End walk", actions.onEndWalk, Modifier.fillMaxWidth())
             }

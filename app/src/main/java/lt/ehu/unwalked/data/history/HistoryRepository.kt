@@ -34,6 +34,8 @@ class HistoryRepository(
 
     val lastLiveFix: Flow<Long?> = dao.lastLiveFix()
 
+    val latestLiveFix: Flow<Fix?> = dao.latestLivePoint().map { it?.let { point -> Fix(point.time, point.lat, point.lon, point.accuracy) } }
+
     val cellVisits: Flow<List<CellVisit>> = cells.map { list ->
         list.map { CellVisit(it.h3, h3.cellToParent(it.h3, Cells.AREA_RESOLUTION), it.firstSeen, it.lastSeen, it.passes) }
     }

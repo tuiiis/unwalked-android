@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import java.time.Instant
 import java.time.LocalTime
 import java.time.ZoneId
+import kotlin.math.roundToInt
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -12,20 +13,27 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import lt.ehu.unwalked.core.error.ErrorReporter
+import lt.ehu.unwalked.core.error.Outcome
 import lt.ehu.unwalked.core.ui.map.HeatCell
 import lt.ehu.unwalked.data.history.HistoryRepository
+import lt.ehu.unwalked.data.route.RouteRepository
 import lt.ehu.unwalked.data.settings.Preferences
+import lt.ehu.unwalked.domain.route.LatLon
+import lt.ehu.unwalked.domain.route.OffRoute
 import lt.ehu.unwalked.domain.route.WalkRoute
 import lt.ehu.unwalked.domain.stats.CellVisit
 import lt.ehu.unwalked.domain.stats.Period
 import lt.ehu.unwalked.domain.stats.Periods
 import lt.ehu.unwalked.domain.stats.StatsCalculator
 import lt.ehu.unwalked.domain.tracking.Streak
+import lt.ehu.unwalked.domain.validation.WalkLength
 import lt.ehu.unwalked.tracking.RecordingStatus
 import lt.ehu.unwalked.tracking.RecordingStatusRules
 
@@ -50,6 +58,8 @@ class MapViewModel(
     private val activeWalk: MutableStateFlow<WalkRoute?>,
     private val batterySaver: () -> Boolean,
     private val calculator: StatsCalculator,
+    private val routes: RouteRepository,
+    private val errors: ErrorReporter,
     private val zone: ZoneId = ZoneId.systemDefault(),
     private val now: () -> Long = System::currentTimeMillis,
 ) : ViewModel() {
@@ -89,6 +99,42 @@ class MapViewModel(
     val state: StateFlow<MapUiState> = combine(base, streaks.onStart { emit(emptyList()) }) { ui, lines -> ui.copy(streaks = lines) }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), MapUiState())
 
+    private val offRoute = OffRoute()
+    private var rerouting = false
+
+    init {
+        viewModelScope.launch {
+            history.latestLiveFix.filterNotNull().distinctUntilChanged().collect { fix ->
+                val walk = activeWalk.value ?: return@collect
+                if (rerouting || !offRoute.update(fix, walk.path)) return@collect
+                reroute(walk, LatLon(fix.lat, fix.lon))
+            }
+        }
+    }
+
+    private suspend fun reroute(walk: WalkRoute, from: LatLon) {
+        rerouting = true
+        try {
+            when (val routed = routes.walking(OffRoute.rejoin(from, walk.path))) {
+                is Outcome.Success -> {
+                    if (activeWalk.value != walk) return
+                    val metres = routed.value.metres
+                    activeWalk.value = walk.copy(path = routed.value.path, metres = metres, minutes = (metres / 1000 / WalkLength.WALKING_KMH * 60).roundToInt())
+                    errors.info("Route updated", "Walk freely") { walkFreely() }
+                }
+
+                is Outcome.Failure -> errors.log(routed.error)
+            }
+        } finally {
+            rerouting = false
+        }
+    }
+
+    fun walkFreely() {
+        offRoute.reset()
+        activeWalk.value = activeWalk.value?.copy(path = emptyList())
+    }
+
     fun selectPeriod(value: Period) {
         period.value = value
     }
@@ -104,6 +150,7 @@ class MapViewModel(
     }
 
     fun endWalk() {
+        offRoute.reset()
         activeWalk.value = null
     }
 
