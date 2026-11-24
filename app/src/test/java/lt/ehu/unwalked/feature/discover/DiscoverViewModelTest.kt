@@ -108,7 +108,7 @@ class DiscoverViewModelTest {
         places.result = networkDown
         val vm = viewModel()
         val failed = vm.state.first { it.content is DiscoverContent.Failed }.content as DiscoverContent.Failed
-        assertEquals("Cannot reach the server. Check the connection and try again.", failed.message)
+        assertEquals("No connection to the server. Check the internet and try again.", failed.message)
         places.result = Outcome.Success(emptyList())
         vm.load()
         assertEquals(0, vm.ready().total)

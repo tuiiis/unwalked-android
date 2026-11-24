@@ -8,7 +8,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import lt.ehu.unwalked.core.error.AppError
 import lt.ehu.unwalked.core.error.ErrorReporter
 import lt.ehu.unwalked.core.error.Outcome
 import lt.ehu.unwalked.data.feedback.FeedbackAction
@@ -97,7 +96,7 @@ class DiscoverViewModel(
                 }
 
                 is Outcome.Failure -> {
-                    loaded.value = DiscoverContent.Failed(failureText(result.error))
+                    loaded.value = DiscoverContent.Failed(ErrorReporter.userText(result.error))
                     errors.log(result.error)
                 }
             }
@@ -136,11 +135,6 @@ class DiscoverViewModel(
 
     fun go(item: Recommendation) {
         viewModelScope.launch { feedback.record(TYPE, FeedbackAction.Accepted, item.place.category) }
-    }
-
-    private fun failureText(error: AppError): String = when (error) {
-        is AppError.Network -> "Cannot reach the server. Check the connection and try again."
-        else -> ErrorReporter.userText(error)
     }
 
     companion object {

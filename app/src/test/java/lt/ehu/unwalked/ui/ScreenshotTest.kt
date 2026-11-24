@@ -128,7 +128,7 @@ class ScreenshotTest {
 
     @Test
     fun discoverFailed() = capture("09-discover-failed") {
-        DiscoverScreen(DiscoverUiState(content = DiscoverContent.Failed("Cannot reach the server. Check the connection and try again.")), DiscoverActions())
+        DiscoverScreen(DiscoverUiState(content = DiscoverContent.Failed("No connection to the server. Check the internet and try again.")), DiscoverActions())
     }
 
     @Test

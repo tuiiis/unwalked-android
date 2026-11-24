@@ -164,7 +164,11 @@ private fun Content(state: DiscoverUiState, actions: DiscoverActions, modifier: 
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     ChipRow(SortOrder.entries, state.order, { it.label }, actions.onOrder)
                     Text(
-                        if (content.items.isEmpty()) "No matches" else "${content.items.size} new places near where you walk",
+                        when (content.items.size) {
+                            0 -> "No matches"
+                            1 -> "1 new place near where you walk"
+                            else -> "${content.items.size} new places near where you walk"
+                        },
                         style = MaterialTheme.typography.titleSmall,
                         color = Palette.Muted,
                         modifier = Modifier.semantics { heading() },
