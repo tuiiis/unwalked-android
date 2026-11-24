@@ -27,22 +27,12 @@ class PrivacyScreenTest {
     val compose = createComposeRule()
 
     @Test
-    fun sampleWeekIsHiddenUntilDeveloperOptionsAreOn() {
-        var taps = 0
-        compose.setContent { UnwalkedTheme { PrivacyScreen(PrivacyUiState(), online = true, PrivacyActions(onVersion = { taps++ })) } }
-
-        assertEquals(0, compose.onAllNodesWithText("Load a sample week in Vilnius").fetchSemanticsNodes().size)
-        compose.onNodeWithText("Version").performScrollTo().performClick()
-        assertEquals(1, taps)
-    }
-
-    @Test
     fun developerOptionsShowTheSampleWeek() {
         var loaded = false
-        compose.setContent { UnwalkedTheme { PrivacyScreen(PrivacyUiState(developerOptions = true), online = true, PrivacyActions(onSample = { loaded = true })) } }
+        compose.setContent { UnwalkedTheme { PrivacyScreen(PrivacyUiState(), online = true, PrivacyActions(onSample = { loaded = true })) } }
 
         compose.onNodeWithText("Developer options").performScrollTo().assertIsDisplayed()
-        compose.onNodeWithText("Load a sample week in Vilnius").performScrollTo().performClick()
+        compose.onNodeWithText("Generate sample walks").performScrollTo().performClick()
         assertEquals(true, loaded)
     }
 

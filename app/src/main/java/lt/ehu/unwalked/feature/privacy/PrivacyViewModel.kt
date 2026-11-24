@@ -18,17 +18,17 @@ import lt.ehu.unwalked.core.error.ErrorReporter
 import lt.ehu.unwalked.data.auth.AuthRepository
 import lt.ehu.unwalked.data.feedback.FeedbackRepository
 import lt.ehu.unwalked.data.history.HistoryRepository
+import lt.ehu.unwalked.data.history.SampleWalks
 import lt.ehu.unwalked.data.local.FeedbackOutboxDao
 import lt.ehu.unwalked.data.settings.Preferences
 import lt.ehu.unwalked.data.settings.Retention
+import lt.ehu.unwalked.domain.route.LatLon
 
 data class PrivacyUiState(
     val email: String? = null,
-    val blurHome: Boolean = true,
     val studyConsent: Boolean = false,
     val retention: Retention = Retention.Forever,
     val busy: Boolean = false,
-    val developerOptions: Boolean = false,
     val importing: Boolean = false,
 )
 
@@ -39,22 +39,20 @@ class PrivacyViewModel(
     private val outbox: FeedbackOutboxDao,
     private val errors: ErrorReporter,
     private val stopRecording: () -> Unit,
+    private val sample: SampleWalks,
+    private val now: () -> Long = System::currentTimeMillis,
 ) : ViewModel() {
     private val busy = MutableStateFlow(false)
     private val importing = MutableStateFlow(false)
     private var importJob: Job? = null
-    private var versionTaps = 0
 
     val state: StateFlow<PrivacyUiState> = combine(
         auth.session,
-        preferences.blurHome,
         preferences.studyConsent,
-        combine(preferences.retention, busy, preferences.developerOptions, importing) { retention, working, developer, timeline -> Extra(retention, working, developer, timeline) },
-    ) { session, blur, consent, extra ->
-        PrivacyUiState(session?.email, blur, consent, extra.retention, extra.busy || extra.importing, extra.developerOptions, extra.importing)
+        combine(preferences.retention, busy, importing) { retention, working, timeline -> Extra(retention, working, timeline) },
+    ) { session, consent, extra ->
+        PrivacyUiState(session?.email, consent, extra.retention, extra.busy || extra.importing, extra.importing)
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), PrivacyUiState())
-
-    fun setBlurHome(value: Boolean) = preferences.setBlurHome(value)
 
     fun setStudyConsent(value: Boolean) {
         preferences.setStudyConsent(value)
@@ -98,14 +96,11 @@ class PrivacyViewModel(
         importJob?.cancel()
     }
 
-    fun loadSample() = work("A sample week in Vilnius was added to your map.") { history.importSampleWeek() }
-
-    fun tapVersion() {
-        if (preferences.developerOptions.value) return
-        versionTaps += 1
-        if (versionTaps < TAPS_TO_UNLOCK) return
-        preferences.setDeveloperOptions(true)
-        errors.info("Developer options are on.")
+    fun loadSample() = work({ added: Int ->
+        if (added == 0) "Could not build sample walks. Check the internet connection and try again." else "Added half a year of sample walks near your last location."
+    }) {
+        val home = history.lastKnownPosition()?.let { LatLon(it.lat, it.lon) } ?: FALLBACK_HOME
+        history.importSample(sample.generate(home, now()))
     }
 
     fun signOut() = auth.signOut()
@@ -126,9 +121,9 @@ class PrivacyViewModel(
         }
     }
 
-    private data class Extra(val retention: Retention, val busy: Boolean, val developerOptions: Boolean, val importing: Boolean)
+    private data class Extra(val retention: Retention, val busy: Boolean, val importing: Boolean)
 
     private companion object {
-        const val TAPS_TO_UNLOCK = 7
+        val FALLBACK_HOME = LatLon(54.6872, 25.2797)
     }
 }

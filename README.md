@@ -26,7 +26,7 @@ The emulator reaches the backend on the host at `http://10.0.2.2:18080/`, which 
 ./gradlew :app:assembleDebug -Punwalked.apiBaseUrl=https://api.example.org/
 ```
 
-Sign in with a seeded test account (`ona@example.test`, password `Unwalked-test-1`) or create a new one. To see the map, stats and recommendations without walking for a week, open Data and privacy, tap Version seven times to show Developer options, then tap "Load a sample week in Vilnius".
+Sign in with a seeded test account (`ona@example.test`, password `Unwalked-test-1`) or create a new one. To see the map, stats and recommendations without walking for a week, open Data and privacy, tap Version seven times to show Developer options, then tap "Generate a month of sample walks". It builds about 50 walks on real streets around your last recorded location, so it works in any city.
 
 ## Tests
 

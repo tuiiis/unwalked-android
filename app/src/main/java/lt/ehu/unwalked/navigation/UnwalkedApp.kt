@@ -48,6 +48,7 @@ import lt.ehu.unwalked.core.ui.map.MapPlace
 import lt.ehu.unwalked.core.ui.motion.Motion
 import lt.ehu.unwalked.core.ui.theme.Palette
 import lt.ehu.unwalked.data.history.Cells
+import lt.ehu.unwalked.data.history.SampleWalks
 import lt.ehu.unwalked.domain.recommendation.CandidateCells
 import lt.ehu.unwalked.domain.recommendation.RecommendationEngine
 import lt.ehu.unwalked.domain.route.LatLon
@@ -289,9 +290,7 @@ private fun MainFlow(container: AppContainer) {
             composable<Privacy> {
                 val context = LocalContext.current
                 val vm = rememberViewModel {
-                    PrivacyViewModel(container.preferences, container.history, container.auth, container.database.feedbackOutbox(), container.errors) {
-                        LocationService.stop(context)
-                    }
+                    PrivacyViewModel(container.preferences, container.history, container.auth, container.database.feedbackOutbox(), container.errors, { LocationService.stop(context) }, SampleWalks(container.routes))
                 }
                 val state by vm.state.collectAsStateWithLifecycle()
                 val exporter = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("application/json")) { uri ->
@@ -305,7 +304,6 @@ private fun MainFlow(container: AppContainer) {
                     online = SystemState.online(context),
                     actions = PrivacyActions(
                         onBack = { nav.popBackStack() },
-                        onBlurHome = vm::setBlurHome,
                         onStudyConsent = vm::setStudyConsent,
                         onRetention = vm::setRetention,
                         onExport = { exporter.launch("unwalked-export.json") },
@@ -314,7 +312,6 @@ private fun MainFlow(container: AppContainer) {
                         onDelete = vm::deleteAll,
                         onCancelImport = vm::cancelImport,
                         onSample = vm::loadSample,
-                        onVersion = vm::tapVersion,
                         onSignOut = vm::signOut,
                     ),
                 )

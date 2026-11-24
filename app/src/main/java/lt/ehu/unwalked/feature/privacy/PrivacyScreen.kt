@@ -51,7 +51,6 @@ import lt.ehu.unwalked.data.settings.Retention
 
 data class PrivacyActions(
     val onBack: () -> Unit = {},
-    val onBlurHome: (Boolean) -> Unit = {},
     val onStudyConsent: (Boolean) -> Unit = {},
     val onRetention: (Retention) -> Unit = {},
     val onExport: () -> Unit = {},
@@ -60,7 +59,6 @@ data class PrivacyActions(
     val onCancelImport: () -> Unit = {},
     val onDelete: () -> Unit = {},
     val onSample: () -> Unit = {},
-    val onVersion: () -> Unit = {},
     val onSignOut: () -> Unit = {},
 )
 
@@ -74,8 +72,6 @@ fun PrivacyScreen(state: PrivacyUiState, online: Boolean, actions: PrivacyAction
             IconButton(onClick = actions.onBack) { Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = "Back") }
             Text("Data and privacy", style = MaterialTheme.typography.titleLarge, modifier = Modifier.semantics { heading() })
         }
-        SwitchRow("Blur home area when sharing", "Radius $HOME_BLUR_METRES m", state.blurHome, actions.onBlurHome)
-        Divider()
         LinkRow("Keep history", state.retention.label, onClick = { chooseRetention = true })
         Divider()
         LinkRow("Export my data", "JSON file with your visits and walked streets", enabled = !state.busy, onClick = actions.onExport)
@@ -107,12 +103,15 @@ fun PrivacyScreen(state: PrivacyUiState, online: Boolean, actions: PrivacyAction
         SectionTitle("Account")
         LinkRow("Sign out", state.email ?: "", onClick = actions.onSignOut)
         Divider()
-        if (state.developerOptions) {
-            SectionTitle("Developer options")
-            LinkRow("Load a sample week in Vilnius", "Adds a week of walks so the map, stats and recommendations have data", enabled = !state.busy, onClick = actions.onSample)
-            Divider()
-        }
-        LinkRow("Version", BuildConfig.VERSION_NAME, onClick = actions.onVersion)
+        SectionTitle("Developer options")
+        LinkRow("Generate sample walks", "Half a year of walks on real streets near your last recorded location. Needs internet", enabled = !state.busy, onClick = actions.onSample)
+        Divider()
+        Text(
+            "Version ${BuildConfig.VERSION_NAME}",
+            style = MaterialTheme.typography.bodySmall,
+            color = Palette.Muted,
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 14.dp),
+        )
         Spacer(Modifier.height(96.dp))
     }
     if (timelineGuide) {
@@ -239,5 +238,3 @@ private fun LinkRow(
         Icon(Icons.AutoMirrored.Outlined.KeyboardArrowRight, contentDescription = null, tint = Palette.Muted)
     }
 }
-
-private const val HOME_BLUR_METRES = 300

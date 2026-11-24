@@ -70,13 +70,16 @@ class HistoryRepository(
         dao.pointsSince(0).lastOrNull()?.let { HabitualPoint(it.lat, it.lon) }
     }
 
-    suspend fun importSampleWeek(nowMillis: Long = System.currentTimeMillis()): Int = withContext(Dispatchers.IO) {
-        val fixes = context.assets.open(SAMPLE).use { GpxParser.parse(it) }
+    suspend fun importSample(fixes: List<Fix>): Int = withContext(Dispatchers.IO) {
         if (fixes.isEmpty()) return@withContext 0
-        val shift = nowMillis - fixes.last().time - SAMPLE_OFFSET_MILLIS
-        val pipeline = TrackPipeline(dao, h3, "sample")
-        fixes.forEach { pipeline.accept(it.copy(time = it.time + shift)) }
-        pipeline.finish()
+        val pipeline = TrackPipeline(dao, h3, SAMPLE)
+        transaction {
+            fixes.sortedBy { it.time }.forEach {
+                ensureActive()
+                pipeline.accept(it)
+            }
+            pipeline.finish()
+        }
         fixes.size
     }
 
@@ -91,7 +94,7 @@ class HistoryRepository(
 
     suspend fun importGoogleTimeline(input: InputStream): Int = withContext(Dispatchers.IO) {
         val after = dao.lastPointTime(GOOGLE) ?: Long.MIN_VALUE
-        val before = dao.firstPointTimeExcept(listOf(GOOGLE, "sample")) ?: Long.MAX_VALUE
+        val before = dao.firstPointTimeExcept(listOf(GOOGLE, SAMPLE)) ?: Long.MAX_VALUE
         val fixes = input.use { GoogleTimeline.parse(it) }.filter { it.time > after && it.time < before }
         ensureActive()
         val pipeline = TrackPipeline(dao, h3, GOOGLE)
@@ -142,8 +145,7 @@ class HistoryRepository(
     }
 
     private companion object {
-        const val SAMPLE = "sample_week.gpx"
-        const val SAMPLE_OFFSET_MILLIS = 60 * 60_000L
+        const val SAMPLE = "sample"
         const val PLACE_KEY_RESOLUTION = 10
         const val DAY_MILLIS = 24 * 60 * 60_000L
         const val IMPORT_BATCH = 2_000
