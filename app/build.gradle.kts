@@ -11,6 +11,7 @@ plugins {
 val apiBaseUrl = providers.gradleProperty("unwalked.apiBaseUrl").get()
 val localProperties = Properties().apply { rootProject.file("local.properties").takeIf { it.isFile }?.inputStream()?.use { load(it) } }
 val mapillaryToken = providers.gradleProperty("unwalked.mapillaryToken").orElse(localProperties.getProperty("MAPILLARY_TOKEN", "")).get()
+val releaseSigning = localProperties.getProperty("RELEASE_SIGNING")?.let { file(it) }?.takeIf { it.isFile }?.let { path -> Properties().apply { path.inputStream().use { load(it) } } }
 
 android {
     namespace = "lt.ehu.unwalked"
@@ -20,10 +21,27 @@ android {
         applicationId = "lt.ehu.unwalked"
         minSdk = 26
         targetSdk = 36
-        versionCode = 1
-        versionName = "0.1.0"
+        versionCode = 2
+        versionName = "0.2.0"
         buildConfigField("String", "API_BASE_URL", "\"$apiBaseUrl\"")
         buildConfigField("String", "MAPILLARY_TOKEN", "\"$mapillaryToken\"")
+    }
+
+    signingConfigs {
+        if (releaseSigning != null) {
+            create("release") {
+                storeFile = file(releaseSigning.getProperty("storeFile"))
+                storePassword = releaseSigning.getProperty("storePassword")
+                keyAlias = releaseSigning.getProperty("keyAlias")
+                keyPassword = releaseSigning.getProperty("keyPassword")
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            signingConfig = signingConfigs.findByName("release")
+        }
     }
 
     buildFeatures {
