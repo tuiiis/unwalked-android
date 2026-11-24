@@ -2,7 +2,7 @@
 
 Android app for the bachelor thesis "Mobile Application for Recommending New Places and Walking Routes Based on the Analysis of the User's Habitual Geography". Documentation and business analysis: [unwalked-thesis](https://github.com/tuiiis/unwalked-thesis). Server: [unwalked-backend](https://github.com/tuiiis/unwalked-backend).
 
-The app records where you walk, shows it as a heat map of H3 cells, and suggests places and walking routes in the parts of the city you have not walked yet. Location history stays on the phone.
+The app records where you walk, lights up the streets you have walked on a map, and suggests places and walking routes in the parts of the city you have not walked yet. Location history stays on the phone.
 
 ## Try it
 
