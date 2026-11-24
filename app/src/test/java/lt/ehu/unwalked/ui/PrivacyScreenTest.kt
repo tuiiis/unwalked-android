@@ -12,6 +12,7 @@ import lt.ehu.unwalked.core.ui.theme.UnwalkedTheme
 import lt.ehu.unwalked.feature.privacy.PrivacyActions
 import lt.ehu.unwalked.feature.privacy.PrivacyScreen
 import lt.ehu.unwalked.feature.privacy.PrivacyUiState
+import lt.ehu.unwalked.feature.privacy.TimelineExportSteps
 import org.junit.Assert.assertEquals
 import org.junit.Rule
 import org.junit.Test
@@ -57,5 +58,23 @@ class PrivacyScreenTest {
         compose.onNodeWithText("Cancel").performClick()
         assertEquals(1, cancelled)
         assertEquals(0, back)
+    }
+
+    @Test
+    fun importShowsTheExportStepsFirst() {
+        var settings = 0
+        var picker = 0
+        compose.setContent {
+            UnwalkedTheme { PrivacyScreen(PrivacyUiState(), online = true, PrivacyActions(onOpenLocationSettings = { settings++ }, onImportTimeline = { picker++ })) }
+        }
+
+        compose.onNodeWithText("Import Google Timeline").performScrollTo().performClick()
+        TimelineExportSteps.forEach { compose.onNodeWithText(it).assertIsDisplayed() }
+        compose.onNodeWithText("Open settings").performClick()
+        assertEquals(1, settings)
+        assertEquals(0, picker)
+        compose.onNodeWithText("Choose file").performClick()
+        assertEquals(1, picker)
+        assertEquals(0, compose.onAllNodesWithText("Export your Timeline first").fetchSemanticsNodes().size)
     }
 }

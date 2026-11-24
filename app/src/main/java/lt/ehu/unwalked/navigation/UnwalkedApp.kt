@@ -1,5 +1,7 @@
 package lt.ehu.unwalked.navigation
 
+import android.content.Intent
+import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.Crossfade
@@ -295,6 +297,7 @@ private fun MainFlow(container: AppContainer) {
                         onRetention = vm::setRetention,
                         onExport = { exporter.launch("unwalked-export.json") },
                         onImportTimeline = { timeline.launch(arrayOf("application/json", "application/octet-stream", "text/plain")) },
+                        onOpenLocationSettings = { runCatching { context.startActivity(Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)) } },
                         onDelete = vm::deleteAll,
                         onCancelImport = vm::cancelImport,
                         onSample = vm::loadSample,

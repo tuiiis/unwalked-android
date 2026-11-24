@@ -56,6 +56,7 @@ data class PrivacyActions(
     val onRetention: (Retention) -> Unit = {},
     val onExport: () -> Unit = {},
     val onImportTimeline: () -> Unit = {},
+    val onOpenLocationSettings: () -> Unit = {},
     val onCancelImport: () -> Unit = {},
     val onDelete: () -> Unit = {},
     val onSample: () -> Unit = {},
@@ -67,6 +68,7 @@ data class PrivacyActions(
 fun PrivacyScreen(state: PrivacyUiState, online: Boolean, actions: PrivacyActions) {
     var confirmDelete by rememberSaveable { mutableStateOf(false) }
     var chooseRetention by rememberSaveable { mutableStateOf(false) }
+    var timelineGuide by rememberSaveable { mutableStateOf(false) }
     Column(Modifier.fillMaxSize().background(Palette.Background).statusBarsPadding().verticalScroll(rememberScrollState())) {
         Row(Modifier.padding(start = 4.dp, top = 4.dp, bottom = 4.dp), verticalAlignment = Alignment.CenterVertically) {
             IconButton(onClick = actions.onBack) { Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = "Back") }
@@ -80,9 +82,9 @@ fun PrivacyScreen(state: PrivacyUiState, online: Boolean, actions: PrivacyAction
         Divider()
         LinkRow(
             "Import Google Timeline",
-            "Timeline.json from Settings › Location › Location services › Timeline › Export Timeline data. Only walks are added",
+            "Timeline.json exported from Android settings. Only walks are added",
             enabled = !state.busy,
-            onClick = actions.onImportTimeline,
+            onClick = { timelineGuide = true },
         )
         Divider()
         LinkRow(
@@ -112,6 +114,16 @@ fun PrivacyScreen(state: PrivacyUiState, online: Boolean, actions: PrivacyAction
         }
         LinkRow("Version", BuildConfig.VERSION_NAME, onClick = actions.onVersion)
         Spacer(Modifier.height(96.dp))
+    }
+    if (timelineGuide) {
+        TimelineGuide(
+            onOpenSettings = actions.onOpenLocationSettings,
+            onChooseFile = {
+                timelineGuide = false
+                actions.onImportTimeline()
+            },
+            onDismiss = { timelineGuide = false },
+        )
     }
     if (state.importing) {
         AlertDialog(
