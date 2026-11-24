@@ -6,7 +6,7 @@ The app records where you walk, lights up the streets you have walked on a map, 
 
 ## Try it
 
-A debug build is attached to the [latest release](https://github.com/tuiiis/unwalked-android/releases/latest). It talks to the public API at https://unwalked-api.onrender.com, which sleeps after 15 minutes without traffic, so the first request after a pause can take about a minute.
+A debug build is attached to the [latest release](https://github.com/tuiiis/unwalked-android/releases/latest). It talks to the public API at https://unwalked-api-7820623db8c8.herokuapp.com.
 
 ## Build and run
 
