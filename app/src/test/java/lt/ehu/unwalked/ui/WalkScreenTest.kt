@@ -2,14 +2,14 @@ package lt.ehu.unwalked.ui
 
 import android.app.Application
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.test.assertIsDisplayed
-import androidx.compose.ui.test.assertIsEnabled
-import androidx.compose.ui.test.assertIsNotEnabled
+import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
-import androidx.compose.ui.test.performTextReplacement
+import androidx.compose.ui.test.performSemanticsAction
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import lt.ehu.unwalked.core.ui.theme.UnwalkedTheme
 import lt.ehu.unwalked.feature.walk.RouteRequest
@@ -30,24 +30,23 @@ class WalkScreenTest {
     val compose = createComposeRule()
 
     @Test
-    fun invalidLengthBlocksBuildingUntilFixed() {
+    fun sliderShowsDistanceAndTimeAndBuildsTheRoute() {
         val vm = WalkViewModel()
         val requests = mutableListOf<RouteRequest>()
         compose.setContent {
             UnwalkedTheme {
                 val state by vm.state.collectAsStateWithLifecycle()
-                WalkScreen(
-                    state,
-                    WalkActions(onMeasure = vm::onMeasure, onSlider = vm::onSlider, onText = vm::onText, onShape = vm::onShape, onPreference = vm::onPreference, onBuild = { vm.request()?.let(requests::add) }),
-                )
+                WalkScreen(state, WalkActions(onLength = vm::onLength, onShape = vm::onShape, onPreference = vm::onPreference, onBuild = { requests += vm.request() }))
             }
         }
-        compose.onNodeWithTag("lengthInput").performTextReplacement("14")
-        compose.onNodeWithText("Enter 1 to 10 km. By time: 15 min to 2 h.").assertIsDisplayed()
-        compose.onNodeWithTag("buildRoute").assertIsNotEnabled()
+        compose.onNodeWithTag("lengthValue").assertTextEquals("3.5 km")
+        compose.onNodeWithText("about 45 min on foot").assertIsDisplayed()
 
-        compose.onNodeWithTag("lengthInput").performTextReplacement("6")
-        compose.onNodeWithTag("buildRoute").assertIsEnabled().performClick()
+        compose.onNodeWithTag("lengthSlider").performSemanticsAction(SemanticsActions.SetProgress) { it(6.2f) }
+        compose.onNodeWithTag("lengthValue").assertTextEquals("6.0 km")
+        compose.onNodeWithText("about 1 h 15 min on foot").assertIsDisplayed()
+
+        compose.onNodeWithTag("buildRoute").performClick()
         assertEquals(6.0, requests.single().kilometres, 0.0)
     }
 }

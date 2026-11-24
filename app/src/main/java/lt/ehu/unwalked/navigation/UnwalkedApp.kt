@@ -178,12 +178,10 @@ private fun MainFlow(container: AppContainer) {
                 WalkScreen(
                     state,
                     WalkActions(
-                        onMeasure = vm::onMeasure,
-                        onSlider = vm::onSlider,
-                        onText = vm::onText,
+                        onLength = vm::onLength,
                         onShape = vm::onShape,
                         onPreference = vm::onPreference,
-                        onBuild = { vm.request()?.let { nav.navigate(RoutePreview(it.kilometres, it.shape.name, it.preference.name)) } },
+                        onBuild = { vm.request().let { nav.navigate(RoutePreview(it.kilometres, it.shape.name, it.preference.name)) } },
                     ),
                 )
             }

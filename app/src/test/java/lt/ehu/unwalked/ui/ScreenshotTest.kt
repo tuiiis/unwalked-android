@@ -22,7 +22,6 @@ import lt.ehu.unwalked.domain.stats.PeriodRange
 import lt.ehu.unwalked.domain.stats.PeriodStats
 import lt.ehu.unwalked.domain.stats.Walk
 import lt.ehu.unwalked.domain.validation.CredentialErrors
-import lt.ehu.unwalked.domain.validation.WalkLength
 import lt.ehu.unwalked.feature.auth.AuthMode
 import lt.ehu.unwalked.feature.auth.AuthScreen
 import lt.ehu.unwalked.feature.auth.AuthUiState
@@ -150,11 +149,6 @@ class ScreenshotTest {
     @Test
     fun walkForm() = capture("11-walk") {
         WalkScreen(WalkFormState(), WalkActions())
-    }
-
-    @Test
-    fun walkFormError() = capture("12-walk-error") {
-        WalkScreen(WalkFormState(text = "14", error = WalkLength.ERROR), WalkActions())
     }
 
     @Test

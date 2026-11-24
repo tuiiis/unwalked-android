@@ -1,38 +1,34 @@
 package lt.ehu.unwalked.domain.validation
 
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class WalkLengthTest {
     @Test
-    fun acceptsBoundaries() {
-        assertTrue(WalkLength.parse("1", WalkMeasure.Distance) is WalkLength.Valid)
-        assertTrue(WalkLength.parse("10", WalkMeasure.Distance) is WalkLength.Valid)
-        assertTrue(WalkLength.parse("15", WalkMeasure.Time) is WalkLength.Valid)
-        assertTrue(WalkLength.parse("120", WalkMeasure.Time) is WalkLength.Valid)
+    fun snapsToHalfKilometreSteps() {
+        assertEquals(3.5, WalkLength.snap(3.4), 0.0)
+        assertEquals(4.0, WalkLength.snap(3.76), 0.0)
     }
 
     @Test
-    fun rejectsOutsideRange() {
-        listOf("0.9", "10.1", "14", "-3").forEach { assertTrue(it, WalkLength.parse(it, WalkMeasure.Distance) is WalkLength.Invalid) }
-        listOf("14", "121").forEach { assertTrue(it, WalkLength.parse(it, WalkMeasure.Time) is WalkLength.Invalid) }
+    fun minutesAreRoundedToFiveAtWalkingPace() {
+        assertEquals(15, WalkLength.minutes(1.0))
+        assertEquals(45, WalkLength.minutes(3.5))
+        assertEquals(125, WalkLength.minutes(10.0))
     }
 
     @Test
-    fun rejectsTextAndBlank() {
-        assertEquals(WalkLength.Invalid(WalkLength.ERROR), WalkLength.parse("abc", WalkMeasure.Distance))
-        assertEquals(WalkLength.Invalid(WalkLength.ERROR), WalkLength.parse("", WalkMeasure.Distance))
+    fun formatsDistanceAndDuration() {
+        assertEquals("3.0 km", WalkLength.kilometres(3.0))
+        assertEquals("3.5 km", WalkLength.kilometres(3.5))
+        assertEquals("10.0 km", WalkLength.kilometres(10.0))
+        assertEquals("45 min", WalkLength.duration(45))
+        assertEquals("1 h", WalkLength.duration(60))
+        assertEquals("2 h 5 min", WalkLength.duration(125))
     }
 
     @Test
-    fun acceptsDecimalComma() {
-        assertEquals(3.5, (WalkLength.parse("3,5", WalkMeasure.Distance) as WalkLength.Valid).value, 0.0)
-    }
-
-    @Test
-    fun convertsTimeToDistanceAtWalkingPace() {
-        val valid = WalkLength.parse("60", WalkMeasure.Time) as WalkLength.Valid
-        assertEquals(4.8, valid.kilometres, 1e-9)
+    fun sliderHasOneStopPerHalfKilometre() {
+        assertEquals(17, WalkLength.STEPS)
     }
 }

@@ -64,7 +64,7 @@ Code style is checked by ktlint with the Android Studio rules, configured in [.e
 | API the client uses | [Backend API docs](https://github.com/tuiiis/unwalked-backend/tree/main/docs/api), client side in `core/network` |
 | Screens, reusable components, services | `feature/*` screens and ViewModels, `core/ui/components`, `data/*` repositories |
 | Routing, 9 routes | `navigation/Routes.kt`, `navigation/UnwalkedApp.kt` |
-| Forms with validation | Sign in and registration (`feature/auth`), walk length (`feature/walk`), rules in `domain/validation` |
+| Forms with validation | Sign in and registration (`feature/auth`), rules in `domain/validation` |
 | Lists with search, filter and sort | Places for you (`feature/discover`) |
 | Global error handling | `core/network/SafeApiCall` maps every failure to `AppError`, `core/error/ErrorReporter` shows snackbars and signs out on 401, collected once in `navigation/UnwalkedApp.kt` |
 | Loading states | `SkeletonBlock` placeholders on every screen that loads, spinners on buttons |

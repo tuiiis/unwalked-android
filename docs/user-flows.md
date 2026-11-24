@@ -49,7 +49,7 @@ flowchart LR
 
 ## S3. Walk of a set length
 
-1. On the Walk tab the user sets the length with the slider or types it. A value outside 1 to 10 km or 15 min to 2 h shows an error under the field and disables Build route
+1. On the Walk tab the user sets the length with a slider from 1 to 10 km in steps of 0.5 km. The walking time is shown next to the distance
 2. The user chooses a loop or a different end point and whether to prefer new streets or places
 3. Route preview tries eight directions, picks the one that crosses the most unvisited cells, and asks the routing service for a walking route through it
 4. The preview shows length, time, new streets, new places and the share of the route that is still unwalked. "Start walk" puts the route on the map
