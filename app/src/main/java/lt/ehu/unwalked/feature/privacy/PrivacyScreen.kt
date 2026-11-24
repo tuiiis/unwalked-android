@@ -66,7 +66,7 @@ fun PrivacyScreen(state: PrivacyUiState, online: Boolean, actions: PrivacyAction
             IconButton(onClick = actions.onBack) { Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = "Back") }
             Text("Data and privacy", style = MaterialTheme.typography.titleLarge, modifier = Modifier.semantics { heading() })
         }
-        SwitchRow("Blur home area when sharing", "Radius 500 m", state.blurHome, actions.onBlurHome)
+        SwitchRow("Blur home area when sharing", "Radius $HOME_BLUR_METRES m", state.blurHome, actions.onBlurHome)
         Divider()
         LinkRow("Keep history", state.retention.label, onClick = { chooseRetention = true })
         Divider()
@@ -206,3 +206,5 @@ private fun LinkRow(
         Icon(Icons.AutoMirrored.Outlined.KeyboardArrowRight, contentDescription = null, tint = Palette.Muted)
     }
 }
+
+private const val HOME_BLUR_METRES = 300
