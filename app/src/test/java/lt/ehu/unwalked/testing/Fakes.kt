@@ -6,6 +6,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 import lt.ehu.unwalked.core.error.AppError
 import lt.ehu.unwalked.core.error.Outcome
+import lt.ehu.unwalked.core.network.AreaDto
 import lt.ehu.unwalked.core.network.CredentialsRequest
 import lt.ehu.unwalked.core.network.FeedbackRequest
 import lt.ehu.unwalked.core.network.LoginResponse
@@ -73,6 +74,8 @@ class FakeApi(var feedbackCode: Int = 201, var failWith: Exception? = null) : Un
     override suspend fun login(body: CredentialsRequest) = LoginResponse("token", "Bearer", "2030-01-01T00:00:00Z")
     override suspend fun placesNear(lat: Double, lon: Double, radius: Double, category: String?, limit: Int?) = emptyList<PlaceDto>()
     override suspend fun placesByCells(body: PlacesByCellsRequest) = emptyList<PlaceDto>()
+    override suspend fun ensureArea(cell: String) = AreaDto(cell, "Ready")
+    override suspend fun area(cell: String) = AreaDto(cell, "Ready")
     override suspend fun submitFeedback(body: FeedbackRequest): Response<Unit> {
         failWith?.let { throw it }
         feedback += body

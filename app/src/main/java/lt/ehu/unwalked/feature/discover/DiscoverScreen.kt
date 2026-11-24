@@ -31,6 +31,7 @@ import androidx.compose.material.icons.outlined.Place
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material.icons.outlined.SearchOff
 import androidx.compose.material.icons.outlined.Storefront
+import androidx.compose.material.icons.outlined.TravelExplore
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -136,6 +137,13 @@ fun DiscoverScreen(state: DiscoverUiState, actions: DiscoverActions, focusSearch
 private fun Content(state: DiscoverUiState, actions: DiscoverActions, modifier: Modifier) {
     when (val content = state.content) {
         DiscoverContent.Loading -> LoadingList(modifier)
+
+        DiscoverContent.LoadingArea -> MessageState(
+            Icons.Outlined.TravelExplore,
+            "Loading places for your area",
+            "This happens once for a new area and takes up to two minutes.",
+            modifier,
+        )
 
         DiscoverContent.NoHistory -> MessageState(
             Icons.Outlined.Explore,

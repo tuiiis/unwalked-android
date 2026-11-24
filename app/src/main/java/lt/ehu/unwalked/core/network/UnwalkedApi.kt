@@ -4,6 +4,8 @@ import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST
+import retrofit2.http.PUT
+import retrofit2.http.Path
 import retrofit2.http.Query
 
 interface UnwalkedApi {
@@ -24,6 +26,12 @@ interface UnwalkedApi {
 
     @POST("api/v1/places/by-cells")
     suspend fun placesByCells(@Body body: PlacesByCellsRequest): List<PlaceDto>
+
+    @PUT("api/v1/areas/{cell}")
+    suspend fun ensureArea(@Path("cell") cell: String): AreaDto
+
+    @GET("api/v1/areas/{cell}")
+    suspend fun area(@Path("cell") cell: String): AreaDto
 
     @POST("api/v1/feedback")
     suspend fun submitFeedback(@Body body: FeedbackRequest): Response<Unit>

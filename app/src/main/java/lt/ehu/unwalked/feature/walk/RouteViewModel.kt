@@ -106,6 +106,7 @@ class RouteViewModel(
     private suspend fun nearbyPlaces(origin: LatLon): List<PlaceCandidate> {
         val centre = h3.latLngToCell(origin.lat, origin.lon, Cells.QUERY_RESOLUTION)
         val cells = h3.gridDisk(centre, NEARBY_RINGS).map { h3.h3ToString(it) }
+        places.prepareAreas(cells, wait = false)
         return (places.inCells(cells, PLACE_LIMIT) as? Outcome.Success)?.value.orEmpty()
     }
 

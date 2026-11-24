@@ -44,3 +44,6 @@ data class ProblemDetails(
     val traceId: String? = null,
     val errors: Map<String, List<String>>? = null,
 )
+
+@Serializable
+data class AreaDto(val cell: String, val status: String, val region: String? = null)

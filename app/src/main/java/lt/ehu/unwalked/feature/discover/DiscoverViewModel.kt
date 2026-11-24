@@ -26,6 +26,7 @@ import lt.ehu.unwalked.domain.recommendation.SortOrder
 sealed interface DiscoverContent {
     data object Loading : DiscoverContent
     data object NoHistory : DiscoverContent
+    data object LoadingArea : DiscoverContent
     data class Failed(val message: String) : DiscoverContent
     data class Ready(val items: List<Recommendation>, val total: Int, val radiusMetres: Double = RecommendationEngine.MAX_METRES_FROM_USUAL) : DiscoverContent
 }
@@ -87,7 +88,9 @@ class DiscoverViewModel(
                 loaded.value = DiscoverContent.NoHistory
                 return@launch
             }
-            when (val result = places.inCells(candidates.around(habits.usual, radiusMetres), LIMIT)) {
+            val cells = candidates.around(habits.usual, radiusMetres)
+            places.prepareAreas(cells) { loaded.value = DiscoverContent.LoadingArea }
+            when (val result = places.inCells(cells, LIMIT)) {
                 is Outcome.Success -> {
                     all.value = engine.rank(result.value, habits.visited, habits.centres, emptySet(), radiusMetres)
                     loaded.value = DiscoverContent.Ready(emptyList(), 0, radiusMetres)

@@ -111,6 +111,10 @@ The heat map does not draw raw GPS tracks. `WalkedStreets` reads the street netw
 
 The result is cached in memory and on disk per set of walks, so switching the period back and forth is instant after the first time. The work runs on a background dispatcher, and the map shows a loading state when it takes longer than 150 ms.
 
+## Places outside Vilnius
+
+The server catalogue starts with Vilnius. Before the app asks for places it turns the cells it is about to query into their H3 parents of resolution 5, areas of about 250 km², and sends `PUT /api/v1/areas/{cell}` for each, at most seven. An area that is ready answers at once. A new area is loaded on the server from OpenStreetMap, and Places for you shows "Loading places for your area" while the app polls every five seconds for up to three minutes. Route planning and the photo prefetch only start the load and never wait for it. The area is the only location the app sends, and it is too coarse to tell where a person lives.
+
 ## Place photos
 
 `PlacePhotos` looks for a photo of the place itself. It asks Wikidata for objects within 80 m that have an image on Wikimedia Commons and accepts one only when its name matches the place. Next it searches Wikimedia Commons for photos taken within 60 m and takes one whose title matches the place, or the closest one within 25 m. If there is still none, it can fall back to a street-level photo from Mapillary when a token is configured. Results are kept on the phone, and `PhotoPrefetch` resolves and downloads photos for the top 30 recommendations in the background two seconds after the app starts, so the list usually opens with photos in place. The list shows a category icon until a photo arrives or when there is none. The credits for places and photos are at the bottom of the list.

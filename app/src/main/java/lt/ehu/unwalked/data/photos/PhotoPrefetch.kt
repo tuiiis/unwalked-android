@@ -26,6 +26,7 @@ class PhotoPrefetch(
         val habits = habitual.habitual()
         if (habits.visited.isEmpty()) return 0
         val cells = candidates.around(habits.usual, RecommendationEngine.MAX_METRES_FROM_USUAL)
+        places.prepareAreas(cells)
         val found = places.inCells(cells, PLACE_LIMIT) as? Outcome.Success ?: return 0
         val ranked = engine.rank(found.value, habits.visited, habits.centres, emptySet())
         val top = engine.filter(ranked, "", CategoryGroup.All, SortOrder.BestMatch).take(limit)
