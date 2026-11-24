@@ -11,7 +11,8 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.lifecycle.lifecycleScope
 import java.io.File
 import kotlinx.coroutines.launch
-import lt.ehu.unwalked.core.ui.theme.Palette
+import lt.ehu.unwalked.core.ui.theme.DarkColors
+import lt.ehu.unwalked.core.ui.theme.LightColors
 import lt.ehu.unwalked.core.ui.theme.UnwalkedTheme
 import lt.ehu.unwalked.navigation.UnwalkedApp
 import timber.log.Timber
@@ -19,8 +20,8 @@ import timber.log.Timber
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge(
-            statusBarStyle = SystemBarStyle.dark(Palette.Background.toArgb()),
-            navigationBarStyle = SystemBarStyle.dark(Palette.Panel.toArgb()),
+            statusBarStyle = SystemBarStyle.auto(LightColors.background.toArgb(), DarkColors.background.toArgb()),
+            navigationBarStyle = SystemBarStyle.auto(LightColors.panel.toArgb(), DarkColors.panel.toArgb()),
         )
         super.onCreate(savedInstanceState)
         val container = (application as UnwalkedApplication).container

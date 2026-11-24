@@ -2,6 +2,9 @@ package lt.ehu.unwalked.core.ui.map
 
 object MapStyle {
     const val TILES = "https://tiles.openfreemap.org/planet"
+    const val LIGHT = "https://tiles.openfreemap.org/styles/positron"
+    const val DARK_LABELS = "water-name"
+    const val LIGHT_LABELS = "waterway_line_label"
 
     val dark: String = """
     {

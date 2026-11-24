@@ -42,6 +42,7 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.nativeCanvas
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
@@ -62,7 +63,9 @@ import lt.ehu.unwalked.core.ui.components.ChipRow
 import lt.ehu.unwalked.core.ui.components.MessageState
 import lt.ehu.unwalked.core.ui.components.SkeletonBlock
 import lt.ehu.unwalked.core.ui.components.StatTile
+import lt.ehu.unwalked.core.ui.theme.LocalPalette
 import lt.ehu.unwalked.core.ui.theme.Palette
+import lt.ehu.unwalked.core.ui.theme.PaletteColors
 import lt.ehu.unwalked.domain.recommendation.CategoryGroup
 import lt.ehu.unwalked.domain.stats.City
 import lt.ehu.unwalked.domain.stats.FunFact
@@ -201,6 +204,7 @@ private fun TravelCard(travel: Travel) {
 
 @Composable
 private fun Globe(travel: Travel, modifier: Modifier) {
+    val p = LocalPalette.current
     val centreLat = Math.toRadians(travel.home.lat.coerceIn(-60.0, 60.0) - GLOBE_TILT)
     val centreLon = Math.toRadians(travel.home.lon)
     fun project(lat: Double, lon: Double): Triple<Float, Float, Boolean> {
@@ -217,23 +221,23 @@ private fun Globe(travel: Travel, modifier: Modifier) {
     val labels = remember {
         android.graphics.Paint().apply {
             isAntiAlias = true
-            color = android.graphics.Color.WHITE
+            color = p.foreground.toArgb()
         }
     }
     Box(modifier.clip(MaterialTheme.shapes.medium)) {
         Canvas(Modifier.fillMaxSize()) {
-            labels.textSize = 12.dp.toPx()
+            labels.textSize = 14.dp.toPx()
             val radius = minOf(size.width, size.height) / 2 * 0.92f * zoom
             val centre = Offset(size.width / 2, size.height / 2)
-            drawCircle(Brush.radialGradient(listOf(Palette.AccentDeep, Palette.Background), centre - Offset(radius / 3, radius / 3), radius * 1.6f), radius, centre)
-            drawCircle(Palette.Accent.copy(alpha = 0.35f), radius, centre, style = Stroke(1.dp.toPx()))
+            drawCircle(Brush.radialGradient(listOf(p.accentDeep, p.background), centre - Offset(radius / 3, radius / 3), radius * 1.6f), radius, centre)
+            drawCircle(p.accent.copy(alpha = 0.35f), radius, centre, style = Stroke(1.dp.toPx()))
             fun line(points: List<Pair<Double, Double>>) {
                 var path: Path? = null
                 points.forEach { (lat, lon) ->
                     val (x, y, visible) = project(lat, lon)
                     val at = centre + Offset(x * radius, y * radius)
                     if (!visible) {
-                        path?.let { drawPath(it, Palette.Accent.copy(alpha = 0.14f), style = Stroke(0.8.dp.toPx())) }
+                        path?.let { drawPath(it, p.accent.copy(alpha = 0.14f), style = Stroke(0.8.dp.toPx())) }
                         path = null
                     } else if (path == null) {
                         path = Path().apply { moveTo(at.x, at.y) }
@@ -241,17 +245,17 @@ private fun Globe(travel: Travel, modifier: Modifier) {
                         path?.lineTo(at.x, at.y)
                     }
                 }
-                path?.let { drawPath(it, Palette.Accent.copy(alpha = 0.14f), style = Stroke(0.8.dp.toPx())) }
+                path?.let { drawPath(it, p.accent.copy(alpha = 0.14f), style = Stroke(0.8.dp.toPx())) }
             }
             for (lon in -180..180 step 20) line((-90..90 step 3).map { it.toDouble() to lon.toDouble() })
             for (lat in -80..80 step 20) line((-180..180 step 3).map { lat.toDouble() to it.toDouble() })
-            travel.cities.drop(1).forEach { arc(travel.home, it.city, centre, radius, ::project) }
+            travel.cities.drop(1).forEach { arc(travel.home, it.city, centre, radius, p.warning, ::project) }
             travel.cities.forEach { stay ->
                 val (x, y, visible) = project(stay.city.lat, stay.city.lon)
                 if (!visible) return@forEach
                 val at = centre + Offset(x * radius, y * radius)
                 val dot = 3.dp.toPx() + 6.dp.toPx() * sqrt(stay.days / most)
-                val colour = if (stay.city == travel.home) Palette.Accent else Palette.Warning
+                val colour = if (stay.city == travel.home) p.accent else p.warning
                 drawCircle(colour.copy(alpha = 0.25f), dot * 2.2f, at)
                 drawCircle(colour, dot, at)
             }
@@ -269,7 +273,7 @@ private fun Globe(travel: Travel, modifier: Modifier) {
     }
 }
 
-private fun DrawScope.arc(from: City, to: City, centre: Offset, radius: Float, project: (Double, Double) -> Triple<Float, Float, Boolean>) {
+private fun DrawScope.arc(from: City, to: City, centre: Offset, radius: Float, colour: Color, project: (Double, Double) -> Triple<Float, Float, Boolean>) {
     val path = Path()
     var started = false
     val reach = minOf(1f, (ln(1 + abs(to.lon - from.lon) + abs(to.lat - from.lat)) / 3).toFloat())
@@ -282,7 +286,7 @@ private fun DrawScope.arc(from: City, to: City, centre: Offset, radius: Float, p
         if (!started) path.moveTo(at.x, at.y) else path.lineTo(at.x, at.y)
         started = true
     }
-    drawPath(path, Palette.Warning.copy(alpha = 0.7f), style = Stroke(1.5.dp.toPx(), cap = StrokeCap.Round))
+    drawPath(path, colour.copy(alpha = 0.7f), style = Stroke(1.5.dp.toPx(), cap = StrokeCap.Round))
 }
 
 private fun flag(code: String): String =
@@ -313,6 +317,7 @@ private fun DistanceCard(fact: FunFact.Distance) {
 
 @Composable
 private fun PaceCard(fact: FunFact.Pace) {
+    val p = LocalPalette.current
     val title = when {
         fact.averageKmh < RELAXED_KMH -> "Relaxed stroller"
         fact.averageKmh < BRISK_KMH -> "Steady walker"
@@ -324,9 +329,9 @@ private fun PaceCard(fact: FunFact.Pace) {
                 val stroke = 10.dp.toPx()
                 val box = Size(size.width - stroke, size.width - stroke)
                 val topLeft = Offset(stroke / 2, stroke / 2)
-                drawArc(Palette.PanelHigh, 180f, 180f, false, topLeft, box, style = Stroke(stroke, cap = StrokeCap.Round))
+                drawArc(p.panelHigh, 180f, 180f, false, topLeft, box, style = Stroke(stroke, cap = StrokeCap.Round))
                 val share = ((fact.averageKmh - GAUGE_MIN) / (GAUGE_MAX - GAUGE_MIN)).toFloat().coerceIn(0f, 1f)
-                drawArc(Palette.Warning, 180f, 180f * share, false, topLeft, box, style = Stroke(stroke, cap = StrokeCap.Round))
+                drawArc(p.warning, 180f, 180f * share, false, topLeft, box, style = Stroke(stroke, cap = StrokeCap.Round))
             }
             Column {
                 Text(String.format(Locale.US, "%.1f km/h", fact.averageKmh), style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.SemiBold)
@@ -363,6 +368,7 @@ private fun WeekCard(fact: FunFact.FavouriteDay) {
 
 @Composable
 private fun PlacesCard(habits: PlaceHabits) {
+    val p = LocalPalette.current
     Card {
         Title("Your spots")
         Row(horizontalArrangement = Arrangement.spacedBy(16.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -371,14 +377,14 @@ private fun PlacesCard(habits: PlaceHabits) {
                 var start = -90f
                 habits.types.forEach { (group, visits) ->
                     val sweep = 360f * visits / total
-                    drawArc(colour(group), start, sweep - 2f, false, Offset(8.dp.toPx(), 8.dp.toPx()), Size(size.width - 16.dp.toPx(), size.height - 16.dp.toPx()), style = Stroke(14.dp.toPx()))
+                    drawArc(colour(group, p), start, sweep - 2f, false, Offset(8.dp.toPx(), 8.dp.toPx()), Size(size.width - 16.dp.toPx(), size.height - 16.dp.toPx()), style = Stroke(14.dp.toPx()))
                     start += sweep
                 }
             }
             Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 habits.types.forEach { (group, visits) ->
                     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Box(Modifier.size(10.dp).background(colour(group), CircleShape))
+                        Box(Modifier.size(10.dp).background(colour(group, p), CircleShape))
                         Text("${group.label} ${(100 * visits / total).toInt()}%", style = MaterialTheme.typography.bodySmall)
                     }
                 }
@@ -386,7 +392,7 @@ private fun PlacesCard(habits: PlaceHabits) {
         }
         habits.favourites.forEachIndexed { i, place ->
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                Text("${i + 1}", style = MaterialTheme.typography.titleMedium, color = colour(place.group), modifier = Modifier.width(20.dp))
+                Text("${i + 1}", style = MaterialTheme.typography.titleMedium, color = colour(place.group, p), modifier = Modifier.width(20.dp))
                 Column(Modifier.weight(1f)) {
                     Text(place.name, style = MaterialTheme.typography.titleSmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
                     Caption(place.group.label)
@@ -397,16 +403,17 @@ private fun PlacesCard(habits: PlaceHabits) {
     }
 }
 
-private fun colour(group: CategoryGroup): Color = when (group) {
-    CategoryGroup.Food -> Palette.Warning
+private fun colour(group: CategoryGroup, p: PaletteColors): Color = when (group) {
+    CategoryGroup.Food -> p.warning
     CategoryGroup.Nature -> Color(0xFF7FD8A6)
     CategoryGroup.Culture -> Color(0xFFC9A7FF)
-    CategoryGroup.Shops -> Palette.Accent
-    else -> Palette.Muted
+    CategoryGroup.Shops -> p.accent
+    else -> p.muted
 }
 
 @Composable
 private fun Bars(values: List<Double>, highlight: (Int) -> Boolean, modifier: Modifier) {
+    val p = LocalPalette.current
     val top = values.maxOrNull()?.takeIf { it > 0 } ?: 1.0
     Canvas(modifier) {
         val slot = size.width / values.size
@@ -414,7 +421,7 @@ private fun Bars(values: List<Double>, highlight: (Int) -> Boolean, modifier: Mo
         values.forEachIndexed { i, value ->
             val height = (value / top * size.height).toFloat().coerceAtLeast(2.dp.toPx())
             drawRoundRect(
-                color = if (highlight(i)) Palette.Warning else Palette.AccentDeep,
+                color = if (highlight(i)) p.warning else p.accentDeep,
                 topLeft = Offset(i * slot + (slot - width) / 2, size.height - height),
                 size = Size(width, height),
                 cornerRadius = CornerRadius(width / 3),

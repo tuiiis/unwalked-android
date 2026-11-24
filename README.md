@@ -69,7 +69,7 @@ Code style is checked by ktlint with the Android Studio rules, configured in [.e
 | Global error handling | `core/network/SafeApiCall` maps every failure to `AppError`, `core/error/ErrorReporter` shows snackbars and signs out on 401, collected once in `navigation/UnwalkedApp.kt` |
 | Loading states | `SkeletonBlock` placeholders on every screen that loads, spinners on buttons |
 | Tests | `app/src/test`, see above |
-| Beyond the minimum | Animated transitions (`core/ui/motion`), charts and a globe on the Stats tab, a dark theme, content descriptions and headings for TalkBack |
+| Beyond the minimum | Animated transitions (`core/ui/motion`), charts and a globe on the Stats tab, dark and light themes that follow the system setting, content descriptions and headings for TalkBack |
 
 ## Project layout
 

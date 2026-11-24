@@ -1,46 +1,79 @@
 package lt.ehu.unwalked.core.ui.theme
 
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Shapes
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Typography
 import androidx.compose.material3.darkColorScheme
+import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
-private val colors = darkColorScheme(
-    primary = Palette.Accent,
-    onPrimary = Palette.OnAccent,
-    primaryContainer = Palette.AccentDeep,
-    onPrimaryContainer = Palette.Foreground,
-    secondary = Palette.Accent,
-    onSecondary = Palette.OnAccent,
-    secondaryContainer = Palette.AccentDeep,
-    onSecondaryContainer = Palette.Foreground,
-    tertiary = Palette.Warning,
-    onTertiary = Palette.OnAccent,
-    background = Palette.Background,
-    onBackground = Palette.Foreground,
-    surface = Palette.Background,
-    onSurface = Palette.Foreground,
-    surfaceVariant = Palette.Panel,
-    onSurfaceVariant = Palette.Muted,
-    surfaceContainerLowest = Palette.Background,
-    surfaceContainerLow = Palette.Panel,
-    surfaceContainer = Palette.Panel,
-    surfaceContainerHigh = Palette.PanelHigh,
-    surfaceContainerHighest = Palette.PanelHigh,
-    outline = Palette.Line,
-    outlineVariant = Palette.Line,
-    error = Palette.Danger,
-    onError = Palette.OnDanger,
-    inverseSurface = Palette.Foreground,
-    inverseOnSurface = Palette.Background,
+private fun darkScheme(p: PaletteColors) = darkColorScheme(
+    primary = p.accent,
+    onPrimary = p.onAccent,
+    primaryContainer = p.accentDeep,
+    onPrimaryContainer = p.foreground,
+    secondary = p.accent,
+    onSecondary = p.onAccent,
+    secondaryContainer = p.accentDeep,
+    onSecondaryContainer = p.foreground,
+    tertiary = p.warning,
+    onTertiary = p.onAccent,
+    background = p.background,
+    onBackground = p.foreground,
+    surface = p.background,
+    onSurface = p.foreground,
+    surfaceVariant = p.panel,
+    onSurfaceVariant = p.muted,
+    surfaceContainerLowest = p.background,
+    surfaceContainerLow = p.panel,
+    surfaceContainer = p.panel,
+    surfaceContainerHigh = p.panelHigh,
+    surfaceContainerHighest = p.panelHigh,
+    outline = p.line,
+    outlineVariant = p.line,
+    error = p.danger,
+    onError = p.onDanger,
+    inverseSurface = p.foreground,
+    inverseOnSurface = p.background,
+)
+
+private fun lightScheme(p: PaletteColors) = lightColorScheme(
+    primary = p.accent,
+    onPrimary = p.onAccent,
+    primaryContainer = p.accentDeep,
+    onPrimaryContainer = p.foreground,
+    secondary = p.accent,
+    onSecondary = p.onAccent,
+    secondaryContainer = p.accentDeep,
+    onSecondaryContainer = p.foreground,
+    tertiary = p.warning,
+    onTertiary = p.onAccent,
+    background = p.background,
+    onBackground = p.foreground,
+    surface = p.background,
+    onSurface = p.foreground,
+    surfaceVariant = p.panel,
+    onSurfaceVariant = p.muted,
+    surfaceContainerLowest = p.background,
+    surfaceContainerLow = p.panel,
+    surfaceContainer = p.panel,
+    surfaceContainerHigh = p.panelHigh,
+    surfaceContainerHighest = p.panelHigh,
+    outline = p.line,
+    outlineVariant = p.line,
+    error = p.danger,
+    onError = p.onDanger,
+    inverseSurface = p.foreground,
+    inverseOnSurface = p.background,
 )
 
 private val roboto = FontFamily.Default
@@ -52,10 +85,10 @@ private val typography = Typography(
     titleSmall = TextStyle(fontFamily = roboto, fontWeight = FontWeight.Medium, fontSize = 15.sp, lineHeight = 20.sp),
     bodyLarge = TextStyle(fontFamily = roboto, fontSize = 16.sp, lineHeight = 22.sp),
     bodyMedium = TextStyle(fontFamily = roboto, fontSize = 14.sp, lineHeight = 20.sp),
-    bodySmall = TextStyle(fontFamily = roboto, fontSize = 12.sp, lineHeight = 16.sp),
+    bodySmall = TextStyle(fontFamily = roboto, fontSize = 14.sp, lineHeight = 20.sp),
     labelLarge = TextStyle(fontFamily = roboto, fontWeight = FontWeight.Medium, fontSize = 15.sp, lineHeight = 20.sp),
-    labelMedium = TextStyle(fontFamily = roboto, fontWeight = FontWeight.Medium, fontSize = 12.sp, lineHeight = 16.sp),
-    labelSmall = TextStyle(fontFamily = roboto, fontSize = 11.sp, lineHeight = 14.sp),
+    labelMedium = TextStyle(fontFamily = roboto, fontWeight = FontWeight.Medium, fontSize = 14.sp, lineHeight = 18.sp),
+    labelSmall = TextStyle(fontFamily = roboto, fontSize = 14.sp, lineHeight = 18.sp),
 )
 
 private val shapes = Shapes(
@@ -67,8 +100,12 @@ private val shapes = Shapes(
 )
 
 @Composable
-fun UnwalkedTheme(content: @Composable () -> Unit) {
-    MaterialTheme(colorScheme = colors, typography = typography, shapes = shapes) {
-        Surface(color = Palette.Background, contentColor = Palette.Foreground, content = content)
+fun UnwalkedTheme(dark: Boolean = isSystemInDarkTheme(), content: @Composable () -> Unit) {
+    val palette = if (dark) DarkColors else LightColors
+    val scheme = if (dark) darkScheme(palette) else lightScheme(palette)
+    CompositionLocalProvider(LocalPalette provides palette) {
+        MaterialTheme(colorScheme = scheme, typography = typography, shapes = shapes) {
+            Surface(color = palette.background, contentColor = palette.foreground, content = content)
+        }
     }
 }

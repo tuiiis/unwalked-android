@@ -38,7 +38,8 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
-import lt.ehu.unwalked.core.ui.theme.Palette
+import lt.ehu.unwalked.core.ui.theme.LocalPalette
+import lt.ehu.unwalked.core.ui.theme.PaletteColors
 import lt.ehu.unwalked.domain.route.LatLon
 import lt.ehu.unwalked.domain.tracking.GeoMath
 import lt.ehu.unwalked.domain.tracking.Streak
@@ -80,6 +81,7 @@ fun HeatMap(
     walkedStreets: suspend (List<Streak>) -> List<GlowLine> = { emptyList() },
     showLoading: Boolean = true,
 ) {
+    val palette = LocalPalette.current
     val context = LocalContext.current
     val lifecycle = LocalLifecycleOwner.current.lifecycle
     var map by remember { mutableStateOf<MapLibreMap?>(null) }
@@ -122,15 +124,15 @@ fun HeatMap(
             loaded.uiSettings.isCompassEnabled = false
             loaded.uiSettings.isRotateGesturesEnabled = false
             loaded.cameraPosition = CameraPosition.Builder().target(LatLng(initialCentre.lat, initialCentre.lon)).zoom(13.2).build()
-            loaded.setStyle(Style.Builder().fromJson(MapStyle.dark)) { ready ->
+            loaded.setStyle(if (palette.isDark) Style.Builder().fromJson(MapStyle.dark) else Style.Builder().fromUri(MapStyle.LIGHT)) { ready ->
                 ready.addSource(GeoJsonSource(TRAIL))
                 ready.addSource(GeoJsonSource(ROUTE))
                 ready.addSource(GeoJsonSource(MARKER))
                 ready.addSource(GeoJsonSource(POSITION))
-                trailLayers().forEach { ready.addLayerBelow(it, "water-name") }
+                trailLayers(palette).forEach { ready.addLayerBelow(it, if (palette.isDark) MapStyle.DARK_LABELS else MapStyle.LIGHT_LABELS) }
                 ready.addLayer(
                     LineLayer("$ROUTE-casing", ROUTE).withProperties(
-                        PropertyFactory.lineColor(Palette.Background.toArgb()),
+                        PropertyFactory.lineColor(palette.background.toArgb()),
                         PropertyFactory.lineWidth(8f),
                         PropertyFactory.lineJoin(Property.LINE_JOIN_ROUND),
                         PropertyFactory.lineCap(Property.LINE_CAP_ROUND),
@@ -138,7 +140,7 @@ fun HeatMap(
                 )
                 ready.addLayer(
                     LineLayer(ROUTE, ROUTE).withProperties(
-                        PropertyFactory.lineColor(Palette.Route.toArgb()),
+                        PropertyFactory.lineColor(palette.route.toArgb()),
                         PropertyFactory.lineWidth(4.5f),
                         PropertyFactory.lineJoin(Property.LINE_JOIN_ROUND),
                         PropertyFactory.lineCap(Property.LINE_CAP_ROUND),
@@ -147,8 +149,8 @@ fun HeatMap(
                 ready.addLayer(
                     CircleLayer(MARKER, MARKER).withProperties(
                         PropertyFactory.circleRadius(9f),
-                        PropertyFactory.circleColor(Palette.Warning.toArgb()),
-                        PropertyFactory.circleStrokeColor(Palette.Background.toArgb()),
+                        PropertyFactory.circleColor(palette.warning.toArgb()),
+                        PropertyFactory.circleStrokeColor(palette.background.toArgb()),
                         PropertyFactory.circleStrokeWidth(3f),
                     ),
                 )
@@ -156,7 +158,7 @@ fun HeatMap(
                     CircleLayer(POSITION, POSITION).withProperties(
                         PropertyFactory.circleRadius(8f),
                         PropertyFactory.circleColor(android.graphics.Color.WHITE),
-                        PropertyFactory.circleStrokeColor(Palette.Accent.toArgb()),
+                        PropertyFactory.circleStrokeColor(palette.accent.toArgb()),
                         PropertyFactory.circleStrokeWidth(4f),
                     ),
                 )
@@ -264,7 +266,7 @@ fun HeatMap(
             exit = fadeOut(),
             modifier = Modifier.align(Alignment.Center).padding(bottom = (coveredBottom * LOADER_LIFT_DP).dp),
         ) {
-            CircularProgressIndicator(color = Palette.Accent, strokeWidth = 3.dp, modifier = Modifier.size(36.dp).semantics { contentDescription = "Building your map" })
+            CircularProgressIndicator(color = palette.accent, strokeWidth = 3.dp, modifier = Modifier.size(36.dp).semantics { contentDescription = "Building your map" })
         }
     }
 }
@@ -272,14 +274,14 @@ fun HeatMap(
 private fun point(marker: MapMarker?): FeatureCollection =
     FeatureCollection.fromFeatures(listOfNotNull(marker?.let { Feature.fromGeometry(Point.fromLngLat(it.lon, it.lat)) }))
 
-private fun glowColor(): Expression =
+private fun glowColor(palette: PaletteColors): Expression =
     Expression.interpolate(
         Expression.linear(),
         Expression.get("passes"),
-        Expression.stop(1, Expression.color(Palette.Heat[0].toArgb())),
-        Expression.stop(3, Expression.color(Palette.Heat[1].toArgb())),
-        Expression.stop(8, Expression.color(Palette.Heat[2].toArgb())),
-        Expression.stop(20, Expression.color(Palette.Heat[3].toArgb())),
+        Expression.stop(1, Expression.color(palette.heat[0].toArgb())),
+        Expression.stop(3, Expression.color(palette.heat[1].toArgb())),
+        Expression.stop(8, Expression.color(palette.heat[2].toArgb())),
+        Expression.stop(20, Expression.color(palette.heat[3].toArgb())),
     )
 
 private fun byZoom(vararg stops: Pair<Float, Float>): Expression =
@@ -289,45 +291,50 @@ private fun byZoom(vararg stops: Pair<Float, Float>): Expression =
         *stops.map { Expression.stop(it.first, it.second) }.toTypedArray(),
     )
 
-private fun trailLayers(): List<LineLayer> = listOf(
+private fun trailLayers(palette: PaletteColors): List<LineLayer> = listOf(
     trailLayer(
         "$TRAIL-off-bloom",
         onStreet = false,
         width = byZoom(8.5f to 30f, 10f to 24f, 12f to 19f, 13.5f to 22f, 17f to 34f),
         blur = byZoom(8.5f to 24f, 10f to 19f, 12f to 15f, 13.5f to 18f, 17f to 30f),
+        palette = palette,
     ),
     trailLayer(
         "$TRAIL-off-core",
         onStreet = false,
         width = byZoom(8.5f to 9f, 10f to 7.5f, 12f to 5.5f, 13.5f to 6f, 17f to 10f),
         blur = byZoom(8.5f to 3f, 10f to 2f, 12f to 1f, 13.5f to 1f, 17f to 3f),
+        palette = palette,
     ),
     trailLayer(
         "$TRAIL-bloom",
         onStreet = true,
         width = byZoom(8.5f to 30f, 10f to 24f, 12.5f to 22f, 14f to 15f, 15f to 18f, 17f to 34f),
         blur = byZoom(8.5f to 24f, 10f to 19f, 12.5f to 18f, 14f to 11f, 15f to 16f, 17f to 30f),
+        palette = palette,
     ),
     trailLayer(
         "$TRAIL-halo",
         onStreet = true,
         width = byZoom(8.5f to 12f, 10f to 10f, 12.5f to 8f, 14f to 5f, 15f to 6f, 17f to 11f),
         blur = byZoom(8.5f to 8f, 10f to 6.5f, 12.5f to 5f, 14f to 2.5f, 15f to 3.5f, 17f to 7f),
+        palette = palette,
     ),
     trailLayer(
         "$TRAIL-core",
         onStreet = true,
         width = byZoom(8.5f to 6f, 10f to 4.5f, 12.5f to 3f, 14f to 1.6f, 15f to 2f, 17f to 3.5f),
         blur = null,
+        palette = palette,
     ),
 )
 
-private fun trailLayer(id: String, onStreet: Boolean, width: Expression, blur: Expression?): LineLayer =
+private fun trailLayer(id: String, onStreet: Boolean, width: Expression, blur: Expression?, palette: PaletteColors): LineLayer =
     LineLayer(id, TRAIL)
         .withFilter(Expression.eq(Expression.get(ON_STREET), onStreet))
         .withProperties(
             *listOfNotNull(
-                PropertyFactory.lineColor(glowColor()),
+                PropertyFactory.lineColor(glowColor(palette)),
                 PropertyFactory.lineWidth(width),
                 blur?.let { PropertyFactory.lineBlur(it) },
                 PropertyFactory.lineOpacity(0f),
