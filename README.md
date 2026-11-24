@@ -1,6 +1,6 @@
 # Unwalked: Android client
 
-Android app for the bachelor thesis "Mobile Application for Recommending New Places and Walking Routes Based on the Analysis of the User's Habitual Geography". Server: [unwalked-backend](https://github.com/tuiiis/unwalked-backend). Business analysis: [unwalked-thesis](https://github.com/tuiiis/unwalked-thesis).
+Android app for the bachelor thesis "Mobile Application for Recommending New Places and Walking Routes Based on the Analysis of the User's Habitual Geography". Server: [unwalked-backend](https://github.com/tuiiis/unwalked-backend).
 
 The app records where you walk, lights up the streets you have walked on a map, and suggests places and walking routes in the parts of the city you have not walked yet. Location history stays on the phone.
 
