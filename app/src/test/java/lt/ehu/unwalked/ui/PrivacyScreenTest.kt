@@ -9,6 +9,7 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.test.espresso.Espresso
 import lt.ehu.unwalked.core.ui.theme.UnwalkedTheme
+import lt.ehu.unwalked.feature.privacy.LongTask
 import lt.ehu.unwalked.feature.privacy.PrivacyActions
 import lt.ehu.unwalked.feature.privacy.PrivacyScreen
 import lt.ehu.unwalked.feature.privacy.PrivacyUiState
@@ -40,7 +41,7 @@ class PrivacyScreenTest {
     fun importBlocksTheScreenUntilCancelled() {
         var cancelled = 0
         var back = 0
-        compose.setContent { UnwalkedTheme { PrivacyScreen(PrivacyUiState(importing = true, busy = true), online = true, PrivacyActions(onCancelImport = { cancelled++ }, onBack = { back++ })) } }
+        compose.setContent { UnwalkedTheme { PrivacyScreen(PrivacyUiState(task = LongTask.Timeline, busy = true), online = true, PrivacyActions(onCancelTask = { cancelled++ }, onBack = { back++ })) } }
 
         compose.onNodeWithText("Importing Google Timeline").assertIsDisplayed()
         Espresso.pressBackUnconditionally()
@@ -66,5 +67,17 @@ class PrivacyScreenTest {
         compose.onNodeWithText("Choose file").performClick()
         assertEquals(1, picker)
         assertEquals(0, compose.onAllNodesWithText("Export your Timeline first").fetchSemanticsNodes().size)
+    }
+
+    @Test
+    fun sampleGenerationBlocksTheScreenUntilCancelled() {
+        var cancelled = 0
+        compose.setContent { UnwalkedTheme { PrivacyScreen(PrivacyUiState(task = LongTask.Sample, busy = true), online = true, PrivacyActions(onCancelTask = { cancelled++ })) } }
+
+        compose.onNodeWithText("Generating sample walks").assertIsDisplayed()
+        Espresso.pressBackUnconditionally()
+        compose.onNodeWithText("Generating sample walks").assertIsDisplayed()
+        compose.onNodeWithText("Cancel").performClick()
+        assertEquals(1, cancelled)
     }
 }

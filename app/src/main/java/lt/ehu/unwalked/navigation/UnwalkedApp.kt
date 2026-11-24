@@ -310,7 +310,7 @@ private fun MainFlow(container: AppContainer) {
                         onImportTimeline = { timeline.launch(arrayOf("application/json", "application/octet-stream", "text/plain")) },
                         onOpenLocationSettings = { runCatching { context.startActivity(Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)) } },
                         onDelete = vm::deleteAll,
-                        onCancelImport = vm::cancelImport,
+                        onCancelTask = vm::cancelTask,
                         onSample = vm::loadSample,
                         onSignOut = vm::signOut,
                     ),

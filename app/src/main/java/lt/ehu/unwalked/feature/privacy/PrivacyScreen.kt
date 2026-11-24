@@ -56,7 +56,7 @@ data class PrivacyActions(
     val onExport: () -> Unit = {},
     val onImportTimeline: () -> Unit = {},
     val onOpenLocationSettings: () -> Unit = {},
-    val onCancelImport: () -> Unit = {},
+    val onCancelTask: () -> Unit = {},
     val onDelete: () -> Unit = {},
     val onSample: () -> Unit = {},
     val onSignOut: () -> Unit = {},
@@ -124,15 +124,15 @@ fun PrivacyScreen(state: PrivacyUiState, online: Boolean, actions: PrivacyAction
             onDismiss = { timelineGuide = false },
         )
     }
-    if (state.importing) {
+    state.task?.let { task ->
         AlertDialog(
             onDismissRequest = {},
             properties = DialogProperties(dismissOnBackPress = false, dismissOnClickOutside = false),
             icon = { CircularProgressIndicator(Modifier.size(32.dp).testTag("importProgress")) },
-            title = { Text("Importing Google Timeline") },
-            text = { Text("This can take a minute. Keep the app open.") },
+            title = { Text(task.title) },
+            text = { Text(task.body) },
             confirmButton = {},
-            dismissButton = { OutlinedButton(onClick = actions.onCancelImport) { Text("Cancel") } },
+            dismissButton = { OutlinedButton(onClick = actions.onCancelTask) { Text("Cancel") } },
         )
     }
     if (confirmDelete) {

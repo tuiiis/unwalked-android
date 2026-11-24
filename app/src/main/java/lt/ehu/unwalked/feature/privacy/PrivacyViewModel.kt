@@ -24,12 +24,17 @@ import lt.ehu.unwalked.data.settings.Preferences
 import lt.ehu.unwalked.data.settings.Retention
 import lt.ehu.unwalked.domain.route.LatLon
 
+enum class LongTask(val title: String, val body: String, val cancelled: String) {
+    Timeline("Importing Google Timeline", "This can take a minute. Keep the app open.", "Import cancelled. Nothing was added."),
+    Sample("Generating sample walks", "Building walks on real streets around your last location. This takes about a minute. Keep the app open.", "Generation cancelled. Nothing was added."),
+}
+
 data class PrivacyUiState(
     val email: String? = null,
     val studyConsent: Boolean = false,
     val retention: Retention = Retention.Forever,
     val busy: Boolean = false,
-    val importing: Boolean = false,
+    val task: LongTask? = null,
 )
 
 class PrivacyViewModel(
@@ -43,15 +48,15 @@ class PrivacyViewModel(
     private val now: () -> Long = System::currentTimeMillis,
 ) : ViewModel() {
     private val busy = MutableStateFlow(false)
-    private val importing = MutableStateFlow(false)
-    private var importJob: Job? = null
+    private val task = MutableStateFlow<LongTask?>(null)
+    private var taskJob: Job? = null
 
     val state: StateFlow<PrivacyUiState> = combine(
         auth.session,
         preferences.studyConsent,
-        combine(preferences.retention, busy, importing) { retention, working, timeline -> Extra(retention, working, timeline) },
+        combine(preferences.retention, busy, task) { retention, working, running -> Extra(retention, working, running) },
     ) { session, consent, extra ->
-        PrivacyUiState(session?.email, consent, extra.retention, extra.busy || extra.importing, extra.importing)
+        PrivacyUiState(session?.email, consent, extra.retention, extra.busy || extra.task != null, extra.task)
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), PrivacyUiState())
 
     fun setStudyConsent(value: Boolean) {
@@ -73,39 +78,42 @@ class PrivacyViewModel(
         outbox.clear()
     }
 
-    fun importGoogleTimeline(input: InputStream) {
-        if (busy.value || importing.value) return
-        importing.value = true
-        importJob = viewModelScope.launch {
-            try {
-                val added = history.importGoogleTimeline(input)
-                errors.info(if (added == 0) "Nothing new to add from this file." else "Added ${NumberFormat.getIntegerInstance(Locale.US).format(added)} walking points from Google Timeline.")
-            } catch (cancelled: CancellationException) {
-                errors.info("Import cancelled. Nothing was added.")
-                throw cancelled
-            } catch (failure: Exception) {
-                errors.info("That did not work: ${failure.message ?: failure.javaClass.simpleName}")
-            } finally {
-                importing.value = false
-                importJob = null
-            }
-        }
-    }
+    fun importGoogleTimeline(input: InputStream) = run(LongTask.Timeline, { added ->
+        if (added == 0) "Nothing new to add from this file." else "Added ${NumberFormat.getIntegerInstance(Locale.US).format(added)} walking points from Google Timeline."
+    }) { history.importGoogleTimeline(input) }
 
-    fun cancelImport() {
-        importJob?.cancel()
-    }
-
-    fun loadSample() = work({ added: Int ->
+    fun loadSample() = run(LongTask.Sample, { added ->
         if (added == 0) "Could not build sample walks. Check the internet connection and try again." else "Added half a year of sample walks near your last location."
     }) {
         val home = history.lastKnownPosition()?.let { LatLon(it.lat, it.lon) } ?: FALLBACK_HOME
         history.importSample(sample.generate(home, now()))
     }
 
+    fun cancelTask() {
+        taskJob?.cancel()
+    }
+
     fun signOut() = auth.signOut()
 
     private fun work(done: String, block: suspend () -> Unit) = work({ _: Unit -> done }, block)
+
+    private fun run(kind: LongTask, done: (Int) -> String, block: suspend () -> Int) {
+        if (busy.value || task.value != null) return
+        task.value = kind
+        taskJob = viewModelScope.launch {
+            try {
+                errors.info(done(block()))
+            } catch (cancelled: CancellationException) {
+                errors.info(kind.cancelled)
+                throw cancelled
+            } catch (failure: Exception) {
+                errors.info("That did not work: ${failure.message ?: failure.javaClass.simpleName}")
+            } finally {
+                task.value = null
+                taskJob = null
+            }
+        }
+    }
 
     private fun <T> work(done: (T) -> String, block: suspend () -> T) {
         if (busy.value) return
@@ -113,6 +121,8 @@ class PrivacyViewModel(
         viewModelScope.launch {
             try {
                 errors.info(done(block()))
+            } catch (cancelled: CancellationException) {
+                throw cancelled
             } catch (failure: Exception) {
                 errors.info("That did not work: ${failure.message ?: failure.javaClass.simpleName}")
             } finally {
@@ -121,7 +131,7 @@ class PrivacyViewModel(
         }
     }
 
-    private data class Extra(val retention: Retention, val busy: Boolean, val importing: Boolean)
+    private data class Extra(val retention: Retention, val busy: Boolean, val task: LongTask?)
 
     private companion object {
         val FALLBACK_HOME = LatLon(54.6872, 25.2797)
