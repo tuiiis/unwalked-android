@@ -54,7 +54,6 @@ data class MapActions(
     val onPeriod: (Period) -> Unit = {},
     val onFindNew: () -> Unit = {},
     val onStartRecording: () -> Unit = {},
-    val onSample: () -> Unit = {},
     val onFixRecording: (Boolean) -> Unit = {},
     val onLater: () -> Unit = {},
     val onEndWalk: () -> Unit = {},
@@ -172,7 +171,6 @@ private fun BottomCard(state: MapUiState, actions: MapActions, modifier: Modifie
                 if (state.recording == RecordingStatus.Off) {
                     PrimaryButton("Start recording", actions.onStartRecording, Modifier.testTag("startRecording"))
                 }
-                SecondaryButton(if (state.importing) "Loading a sample week…" else "Try a sample week in Vilnius", actions.onSample, Modifier.fillMaxWidth(), enabled = !state.importing)
             }
 
             else -> {

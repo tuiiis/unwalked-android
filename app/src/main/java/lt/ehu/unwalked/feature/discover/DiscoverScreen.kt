@@ -140,7 +140,7 @@ private fun Content(state: DiscoverUiState, actions: DiscoverActions, modifier: 
         DiscoverContent.NoHistory -> MessageState(
             Icons.Outlined.Explore,
             "Nothing to compare with yet",
-            "Recommendations need a few walks. Record a walk or load the sample week on the map.",
+            "Recommendations need a few walks. Record a walk and come back.",
             modifier,
             "Open the map" to actions.onOpenMap,
         )

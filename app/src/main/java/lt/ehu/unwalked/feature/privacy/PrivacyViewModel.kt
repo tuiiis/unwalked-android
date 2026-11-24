@@ -26,6 +26,7 @@ data class PrivacyUiState(
     val studyConsent: Boolean = false,
     val retention: Retention = Retention.Forever,
     val busy: Boolean = false,
+    val developerOptions: Boolean = false,
 )
 
 class PrivacyViewModel(
@@ -37,15 +38,15 @@ class PrivacyViewModel(
     private val stopRecording: () -> Unit,
 ) : ViewModel() {
     private val busy = MutableStateFlow(false)
+    private var versionTaps = 0
 
     val state: StateFlow<PrivacyUiState> = combine(
         auth.session,
         preferences.blurHome,
         preferences.studyConsent,
-        preferences.retention,
-        busy,
-    ) { session, blur, consent, retention, working ->
-        PrivacyUiState(session?.email, blur, consent, retention, working)
+        combine(preferences.retention, busy, preferences.developerOptions, ::Triple),
+    ) { session, blur, consent, (retention, working, developer) ->
+        PrivacyUiState(session?.email, blur, consent, retention, working, developer)
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), PrivacyUiState())
 
     fun setBlurHome(value: Boolean) = preferences.setBlurHome(value)
@@ -75,6 +76,14 @@ class PrivacyViewModel(
 
     fun loadSample() = work("A sample week in Vilnius was added to your map.") { history.importSampleWeek() }
 
+    fun tapVersion() {
+        if (preferences.developerOptions.value) return
+        versionTaps += 1
+        if (versionTaps < TAPS_TO_UNLOCK) return
+        preferences.setDeveloperOptions(true)
+        errors.info("Developer options are on.")
+    }
+
     fun signOut() = auth.signOut()
 
     private fun work(done: String, block: suspend () -> Unit) = work({ _: Unit -> done }, block)
@@ -91,5 +100,9 @@ class PrivacyViewModel(
                 busy.value = false
             }
         }
+    }
+
+    private companion object {
+        const val TAPS_TO_UNLOCK = 7
     }
 }

@@ -42,6 +42,7 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
+import lt.ehu.unwalked.BuildConfig
 import lt.ehu.unwalked.core.ui.theme.Palette
 import lt.ehu.unwalked.data.settings.Retention
 
@@ -54,6 +55,7 @@ data class PrivacyActions(
     val onImportTimeline: () -> Unit = {},
     val onDelete: () -> Unit = {},
     val onSample: () -> Unit = {},
+    val onVersion: () -> Unit = {},
     val onSignOut: () -> Unit = {},
 )
 
@@ -96,11 +98,15 @@ fun PrivacyScreen(state: PrivacyUiState, online: Boolean, actions: PrivacyAction
             actions.onStudyConsent,
         )
         Divider()
-        SectionTitle("Demo")
-        LinkRow("Load a sample week in Vilnius", "Adds a week of walks so the map, stats and recommendations have data", enabled = !state.busy, onClick = actions.onSample)
-        Divider()
         SectionTitle("Account")
         LinkRow("Sign out", state.email ?: "", onClick = actions.onSignOut)
+        Divider()
+        if (state.developerOptions) {
+            SectionTitle("Developer options")
+            LinkRow("Load a sample week in Vilnius", "Adds a week of walks so the map, stats and recommendations have data", enabled = !state.busy, onClick = actions.onSample)
+            Divider()
+        }
+        LinkRow("Version", BuildConfig.VERSION_NAME, onClick = actions.onVersion)
         Spacer(Modifier.height(96.dp))
     }
     if (confirmDelete) {

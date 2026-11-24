@@ -48,7 +48,6 @@ data class MapUiState(
     val hasHistory: Boolean = false,
     val recording: RecordingStatus = RecordingStatus.Off,
     val walk: WalkRoute? = null,
-    val importing: Boolean = false,
 )
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -64,7 +63,6 @@ class MapViewModel(
     private val now: () -> Long = System::currentTimeMillis,
 ) : ViewModel() {
     private val period = MutableStateFlow(Period.Year)
-    private val importing = MutableStateFlow(false)
     private val startedAt = MutableStateFlow(now())
     private val ticks = flow {
         while (true) {
@@ -81,7 +79,7 @@ class MapViewModel(
         Periods.range(selected, now(), zone, visits.minOfOrNull { it.firstSeen }).start
     }.distinctUntilChanged().mapLatest { since -> history.streaks(since) }
 
-    private val base = combine(history.cellVisits, period, status, activeWalk, importing) { visits, selected, recording, walk, busy ->
+    private val base = combine(history.cellVisits, period, status, activeWalk) { visits, selected, recording, walk ->
         val range = Periods.range(selected, now(), zone, visits.minOfOrNull { it.firstSeen })
         val shown = visits.filter { it.lastSeen >= range.start }
         MapUiState(
@@ -92,7 +90,6 @@ class MapViewModel(
             hasHistory = visits.isNotEmpty(),
             recording = recording,
             walk = walk,
-            importing = busy,
         )
     }
 
@@ -152,18 +149,6 @@ class MapViewModel(
     fun endWalk() {
         offRoute.reset()
         activeWalk.value = null
-    }
-
-    fun importSample() {
-        if (importing.value) return
-        importing.value = true
-        viewModelScope.launch {
-            try {
-                history.importSampleWeek()
-            } finally {
-                importing.value = false
-            }
-        }
     }
 
     private fun summary(all: List<CellVisit>, shown: List<CellVisit>, title: String): MapSummary? {

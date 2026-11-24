@@ -297,6 +297,7 @@ private fun MainFlow(container: AppContainer) {
                         onImportTimeline = { timeline.launch(arrayOf("application/json", "application/octet-stream", "text/plain")) },
                         onDelete = vm::deleteAll,
                         onSample = vm::loadSample,
+                        onVersion = vm::tapVersion,
                         onSignOut = vm::signOut,
                     ),
                 )
@@ -338,7 +339,6 @@ private fun MapRoute(container: AppContainer, nav: NavHostController, calculator
             onPeriod = vm::selectPeriod,
             onFindNew = { nav.navigate(Discover()) },
             onStartRecording = { permissions.launch(Permissions.foreground) },
-            onSample = vm::importSample,
             onFixRecording = { batterySaver -> if (batterySaver) SystemState.openBatterySaver(context) else SystemState.openLocationSettings(context) },
             onLater = vm::snoozeReminder,
             onEndWalk = vm::endWalk,
