@@ -28,6 +28,8 @@ import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -39,11 +41,13 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
@@ -59,6 +63,8 @@ import kotlin.math.cos
 import kotlin.math.ln
 import kotlin.math.sin
 import kotlin.math.sqrt
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import lt.ehu.unwalked.core.ui.components.ChipRow
 import lt.ehu.unwalked.core.ui.components.MessageState
 import lt.ehu.unwalked.core.ui.components.SkeletonBlock
@@ -68,6 +74,7 @@ import lt.ehu.unwalked.core.ui.theme.Palette
 import lt.ehu.unwalked.core.ui.theme.PaletteColors
 import lt.ehu.unwalked.domain.recommendation.CategoryGroup
 import lt.ehu.unwalked.domain.stats.City
+import lt.ehu.unwalked.domain.stats.CountryOutlines
 import lt.ehu.unwalked.domain.stats.FunFact
 import lt.ehu.unwalked.domain.stats.Period
 import lt.ehu.unwalked.domain.stats.PlaceHabits
@@ -205,6 +212,10 @@ private fun TravelCard(travel: Travel) {
 @Composable
 private fun Globe(travel: Travel, modifier: Modifier) {
     val p = LocalPalette.current
+    val context = LocalContext.current
+    val outlines by produceState(emptyList<List<Pair<Double, Double>>>()) {
+        value = withContext(Dispatchers.IO) { runCatching { CountryOutlines.parse(context.assets.open(CountryOutlines.ASSET).bufferedReader().use { it.readText() }) }.getOrDefault(emptyList()) }
+    }
     val centreLat = Math.toRadians(travel.home.lat.coerceIn(-60.0, 60.0) - GLOBE_TILT)
     val centreLon = Math.toRadians(travel.home.lon)
     fun project(lat: Double, lon: Double): Triple<Float, Float, Boolean> {
@@ -231,13 +242,13 @@ private fun Globe(travel: Travel, modifier: Modifier) {
             val centre = Offset(size.width / 2, size.height / 2)
             drawCircle(Brush.radialGradient(listOf(p.accentDeep, p.background), centre - Offset(radius / 3, radius / 3), radius * 1.6f), radius, centre)
             drawCircle(p.accent.copy(alpha = 0.35f), radius, centre, style = Stroke(1.dp.toPx()))
-            fun line(points: List<Pair<Double, Double>>) {
+            fun line(points: List<Pair<Double, Double>>, colour: Color = p.accent.copy(alpha = 0.14f), width: Float = 0.8.dp.toPx()) {
                 var path: Path? = null
                 points.forEach { (lat, lon) ->
                     val (x, y, visible) = project(lat, lon)
                     val at = centre + Offset(x * radius, y * radius)
                     if (!visible) {
-                        path?.let { drawPath(it, p.accent.copy(alpha = 0.14f), style = Stroke(0.8.dp.toPx())) }
+                        path?.let { drawPath(it, colour, style = Stroke(width, join = StrokeJoin.Round)) }
                         path = null
                     } else if (path == null) {
                         path = Path().apply { moveTo(at.x, at.y) }
@@ -245,10 +256,11 @@ private fun Globe(travel: Travel, modifier: Modifier) {
                         path?.lineTo(at.x, at.y)
                     }
                 }
-                path?.let { drawPath(it, p.accent.copy(alpha = 0.14f), style = Stroke(0.8.dp.toPx())) }
+                path?.let { drawPath(it, colour, style = Stroke(width, join = StrokeJoin.Round)) }
             }
             for (lon in -180..180 step 20) line((-90..90 step 3).map { it.toDouble() to lon.toDouble() })
             for (lat in -80..80 step 20) line((-180..180 step 3).map { lat.toDouble() to it.toDouble() })
+            outlines.forEach { line(it, p.accent.copy(alpha = 0.5f), 1.dp.toPx()) }
             travel.cities.drop(1).forEach { arc(travel.home, it.city, centre, radius, p.warning, ::project) }
             travel.cities.forEach { stay ->
                 val (x, y, visible) = project(stay.city.lat, stay.city.lon)

@@ -92,3 +92,4 @@ An Android app counts for this criterion instead of a web SPA, as confirmed by t
 | Map tiles | OpenStreetMap data served by OpenFreeMap |
 | Walking routes | OSRM foot profile on OpenStreetMap data |
 | Place photos | Wikimedia Commons, Mapillary (CC BY-SA) |
+| Country outlines on the Stats globe | Natural Earth 1:110m (public domain) |
